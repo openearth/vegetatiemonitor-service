@@ -1,0 +1,92 @@
+basePath: "/"
+
+definitions:
+  MapUri:
+    properties:
+      id:
+        type: string
+      token:
+        type: string
+  MapFilter:
+    type: object
+    required:
+      - region
+    example: |
+      {
+        "dateBegin": "2016-07-20",
+        "dateEnd": "2016-07-21",
+        "bands": ["red", "green", "blue"],
+        "region": {
+          "geodesic": true,
+          "type": "Polygon",
+          "coordinates": [[
+            [5.846,51.984],
+            [5.849,51.961],
+            [5.910,51.960],
+            [5.916,51.985],
+            [5.877,51.990],
+            [5.846,51.984]
+          ]]
+        }
+      }
+    properties:
+      region:
+        type: string
+      dateBegin:
+        type: string
+        format: date-time
+      dateEnd:
+        type: string
+        format: date-time
+      bands:
+        type: array
+        items:
+          type: string
+          enum: ['red','green','blue','nir','swir']
+        minItems: 3
+        maxItems: 3
+
+info:
+  description: Queries satellite images, spectral indices, and classifications from Google Earth Engine
+  termsOfService: "/terms"
+  title: Vegetatie Monitor API
+  version: 0.0.1
+
+paths:
+  "/map/{id}/":
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      description: Returns image uri (map) processed by Google Earth Engine
+      externalDocs:
+        description: Project repository
+        url: http://github.com/openearth/vegetatiemonitor
+      operationId: get_map
+      parameters:
+        - in: path
+          name: id
+          type: string
+          enum: ['satellite', 'ndvi', 'landuse', 'landuse-vs-legger']
+          required: true
+          default: 'satellite'
+        - in: body
+          name: body
+          description: The filter for map request
+          schema:
+              $ref: "#/definitions/MapFilter"
+      responses:
+        200:
+          description: Map url and token
+          examples:
+            {
+              "mapid": "c6fe0719a50537474301fc4c4dec12a8",
+              "token": "1a07933a4f6f2f5157658d067fbccc5b"
+            }
+          schema:
+            "$ref": "#/definitions/MapUri"
+      schemes:
+        - http
+        - https
+swagger: '2.0'

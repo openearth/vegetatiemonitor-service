@@ -1,2 +1,4 @@
 Flask==0.12.2
 gunicorn==19.7.1
+earthengine-api==0.1.135
+flasgger==0.8.1
