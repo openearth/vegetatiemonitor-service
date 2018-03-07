@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 from flasgger import Swagger
 
 import ee
@@ -13,9 +13,10 @@ band_names = {
     'readable': ['blue', 'green', 'red', 'nir', 'swir']
 }
 
+
 def get_sentinel_image(region, dateBegin, dateEnd, bands):
-    images = ee.ImageCollection('COPERNICUS/S2')\
-        .select(band_names['s2'], band_names['readable'])\
+    images = ee.ImageCollection('COPERNICUS/S2') \
+        .select(band_names['s2'], band_names['readable']) \
         .filterBounds(region)
 
     if dateBegin:
@@ -32,14 +33,18 @@ def get_sentinel_image(region, dateBegin, dateEnd, bands):
 
     return image
 
+
 def get_ndvi(region, dateBegin, dateEnd):
     pass
+
 
 def get_landuse(region, dateBegin, dateEnd):
     pass
 
+
 def get_landuse_vs_legger(region, dateBegin):
     pass
+
 
 maps = {
     'satellite': get_sentinel_image,
@@ -47,6 +52,7 @@ maps = {
     'landuse': get_landuse,
     'landuse-vs-legger': get_landuse_vs_legger
 }
+
 
 @app.route('/map/<string:id>/', methods=['POST'])
 def get_map(id):
@@ -59,7 +65,7 @@ def get_map(id):
     region = json['region']
 
     dateBegin = json['dateBegin']
-    dateEnd= json['dateEnd']
+    dateEnd = json['dateEnd']
 
     dateBegin = dateBegin or ee.Date(dateBegin)
     dateEnd = dateEnd or ee.Date(dateEnd)
@@ -72,13 +78,18 @@ def get_map(id):
     map_id = map['mapid']
     token = map['token']
 
-    url = 'https://earthengine.googleapis.com/map/'\
-        '{0}/{{z}}/{{x}}/{{y}}?token={1}'\
+    url = 'https://earthengine.googleapis.com/map/' \
+          '{0}/{{z}}/{{x}}/{{y}}?token={1}' \
         .format(map_id, token)
 
     results = {'url': url}
 
     return jsonify(results)
+
+
+@app.route('/')
+def root():
+    return redirect(request.url + 'apidocs')
 
 
 if __name__ == '__main__':
