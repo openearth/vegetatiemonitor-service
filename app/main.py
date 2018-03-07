@@ -3,7 +3,12 @@ from flasgger import Swagger
 
 import ee
 
-ee.Initialize()
+import config
+
+# Initialize the EE API.
+# Use our App Engine service account's credentials.
+EE_CREDENTIALS = ee.ServiceAccountCredentials(config.EE_ACCOUNT, config.EE_PRIVATE_KEY_FILE)
+ee.Initialize(EE_CREDENTIALS)
 
 app = Flask(__name__)
 swagger = Swagger(app, template_file='api.yaml')
@@ -27,7 +32,7 @@ def get_sentinel_image(region, dateBegin, dateEnd, bands):
 
     image = ee.Image(images.mosaic()).divide(10000)
 
-    vis = {'min': 0.05, 'max': [0.35, 0.35, 0.45], 'gamma': 2, 'bands': bands}
+    vis = {'min': 0.05, 'max': [0.35, 0.35, 0.45], 'gamma': 1.4, 'bands': bands}
 
     image = image.visualize(**vis)
 
