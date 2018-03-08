@@ -1,20 +1,52 @@
+swagger: "2.0"
 basePath: "/"
 
+schemes:
+  - http
+  - https
+
 definitions:
+  ImageBands:
+    type: array
+    items:
+      type: string
+      enum:
+        - red
+        - green
+        - blue
+        - nir
+        - swir
+    minItems: 3
+    maxItems: 3
+    example: red,green,blue
+
+  MapId:
+    type: string
+    enum:
+      - satellite
+      - ndvi
+      - landuse
+      - landuse-vs-legger
+
   MapUri:
     properties:
       id:
         type: string
       token:
         type: string
+    example:
+      {
+        "url": "https://earthengine.googleapis.com/map/03d64f27b85612c8f9992e05f110b8b5/{z}/{x}/{y}?token=4a7cd96a32cf56066e34fb155d40f284"
+      }
+
   MapFilter:
     type: object
     required:
       - region
-    example: |
+    example:
       {
-        "dateBegin": "2016-07-20",
-        "dateEnd": "2016-07-21",
+        "dateBegin": "2016-01-01",
+        "dateEnd": "2016-02-01",
         "bands": ["red", "green", "blue"],
         "region": {
           "geodesic": true,
@@ -39,38 +71,80 @@ definitions:
         type: string
         format: date-time
       bands:
-        type: array
-        items:
-          type: string
-          enum: ['red','green','blue','nir','swir']
-        minItems: 3
-        maxItems: 3
+        schema:
+          $ref: "#/definitions/ImageBands"
 
 info:
   description: Queries satellite images, spectral indices, and classifications from Google Earth Engine
-  termsOfService: "/terms"
   title: Vegetatie Monitor API
-  version: 0.0.1
+  version: "1.0.0"
 
 paths:
-  "/map/{id}/":
+  /map/{id}/:
     post:
       consumes:
         - application/json
       produces:
         - application/json
       description: Returns image uri (map) processed by Google Earth Engine
-      externalDocs:
-        description: Project repository
-        url: http://github.com/openearth/vegetatiemonitor
-      operationId: get_map
+      operationId: getMap
       parameters:
         - in: path
           name: id
-          type: string
-          enum: ['satellite', 'ndvi', 'landuse', 'landuse-vs-legger']
           required: true
           default: 'satellite'
+          schema:
+            $ref: "#/definitions/MapId"
+        - in: body
+          name: body
+          description: The filter for map request
+          schema:
+            $ref: "#/definitions/MapFilter"
+      responses:
+        200:
+          description: Image tile url
+          schema:
+            "$ref": "#/definitions/MapUri"
+
+  /image/:
+    get:
+      produces:
+        - application/json
+      description: Gets image by image id
+      operationId: getImageById
+      parameters:
+        - in: query
+          name: id
+          required: true
+          type: string
+          example: COPERNICUS/S2/20160102T110129_20160102T144623_T31UGT
+        - in: query
+          name: bands
+          required: true
+          default: swir,nir,green
+          schema:
+            $ref: "#/definitions/ImageBands"
+      responses:
+        200:
+          description: Image tile url
+          schema:
+            "$ref": "#/definitions/MapUri"
+
+  /map/{id}/times/:
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      description: For a given region and start/end times, ids and time stamps for all available images
+      operationId: getImageTimes
+      parameters:
+        - in: path
+          name: id
+          required: true
+          default: 'satellite'
+          schema:
+            $ref: "#/definitions/MapId"
         - in: body
           name: body
           description: The filter for map request
@@ -78,15 +152,19 @@ paths:
               $ref: "#/definitions/MapFilter"
       responses:
         200:
-          description: Map url and token
+          description: Array of image times and image infos
           examples:
             {
-              "mapid": "c6fe0719a50537474301fc4c4dec12a8",
-              "token": "1a07933a4f6f2f5157658d067fbccc5b"
+              "image_ids": [
+                "COPERNICUS/S2/20160102T110129_20160102T144623_T31UFT",
+                "COPERNICUS/S2/20160102T110129_20160102T144623_T31UGT",
+                "COPERNICUS/S2/20160112T110648_20160112T162938_T31UFT",
+              ],
+              "image_times": [
+                "2016-01-02 11:01",
+                "2016-01-02 11:01",
+                "2016-01-12 11:06",
+              ]
             }
           schema:
             "$ref": "#/definitions/MapUri"
-      schemes:
-        - http
-        - https
-swagger: '2.0'
