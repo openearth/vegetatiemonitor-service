@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, redirect, request
+import flask_cors 
 from flasgger import Swagger
 import ee
 
@@ -82,6 +83,7 @@ def get_image_url(image):
 
 
 @app.route('/map/<string:id>/', methods=['POST'])
+@flask_cors.cross_origin()
 def get_map(id):
     """
     Returns maps processed by Google Earth Engine
@@ -109,6 +111,7 @@ def get_map(id):
 
 
 @app.route('/image/', methods=['GET'])
+@flask_cors.cross_origin()
 def get_image_by_id():
     id = request.args.get('id')
     bands = request.args.get('bands')
@@ -125,6 +128,7 @@ def get_image_by_id():
 
 
 @app.route('/map/<string:id>/times/', methods=['POST'])
+@flask_cors.cross_origin()
 def get_map_times(id):
     """
     Returns maps processed by Google Earth Engine
@@ -153,6 +157,7 @@ def get_map_times(id):
 
 
 @app.route('/')
+@flask_cors.cross_origin()
 def root():
     """
     Redirect default page to API docs.
