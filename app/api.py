@@ -1,12 +1,18 @@
 from flask import Flask, jsonify, redirect, request
-from flasgger import Swagger
 import ee
+
+# import connexion
+
+# app = connexion.App(__name__, specification_dir='.')
+# app.add_api('api.yaml')
+
+import flasgger
 
 # create app
 app = Flask(__name__)
 
 # register specs
-Swagger(app, template_file='api.yaml')
+flasgger.Swagger(app, template_file='api.yaml')
 
 band_names = {
     's2': ['B2', 'B3', 'B4', 'B8', 'B12'],
