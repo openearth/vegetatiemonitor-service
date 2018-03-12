@@ -154,11 +154,15 @@ def get_map_times(id):
     date_begin = date_begin or ee.Date(date_begin)
     date_end = date_end or ee.Date(date_end)
 
-    images = get_sentinel_images(region, date_begin, date_end)
+    try:
+        images = get_sentinel_images(region, date_begin, date_end)
 
-    image_times = ee.List(images.aggregate_array('system:time_start')) \
-        .map(to_date_time_string).getInfo()
-    image_ids = images.aggregate_array('system:id').getInfo()
+        image_times = ee.List(images.aggregate_array('system:time_start')) \
+            .map(to_date_time_string).getInfo()
+        image_ids = images.aggregate_array('system:id').getInfo()
+
+    except ee.exception as e:
+        return jsonify({ error: str(e) })
 
     return jsonify({'image_times': image_times, 'image_ids': image_ids})
 
