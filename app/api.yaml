@@ -34,9 +34,9 @@ definitions:
       - region
     example:
       {
-        "dateBegin": "2016-01-01",
-        "dateEnd": "2016-02-01",
-        "vis": { 
+        "dateBegin": "2016-07-20",
+        "dateEnd": "2016-07-21",
+        "vis": {
           "bands": ["red", "green", "blue"], 
           "gamma": 2.0
         },
