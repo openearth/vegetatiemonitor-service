@@ -13,6 +13,9 @@ import flasgger
 # create app
 app = Flask(__name__)
 
+from errors import errors
+app.register_blueprint(errors)
+
 # register specs
 flasgger.Swagger(app, template_file='api.yaml')
 
@@ -39,19 +42,24 @@ def get_sentinel_images(region, date_begin, date_end):
 
     return images
 
-def visualize_image(image, bands):
-    vis = {'min': 0.05, 'max': [0.35, 0.35, 0.45], 'gamma': 1.4,
-           'bands': bands}
+def visualize_image(image, opt_vis):
+    vis = {'min': 0.05, 'max': [0.35, 0.35, 0.45], 'gamma': 1.4}
+
+    if opt_vis['gamma']:
+        vis['gamma'] = opt_vis['gamma']
+
+    if opt_vis['bands']:
+        vis['bands'] = opt_vis['bands']
 
     return image.visualize(**vis)
 
 
-def get_sentinel_image(region, date_begin, date_end, bands):
+def get_sentinel_image(region, date_begin, date_end, vis):
     images = get_sentinel_images(region, date_begin, date_end)
 
     image = ee.Image(images.mosaic()).divide(10000)
 
-    image = visualize_image(image, bands)
+    image = visualize_image(image, vis)
 
     return image
 
@@ -61,6 +69,8 @@ def get_ndvi(region, date_begin, date_end):
 
 
 def get_landuse(region, date_begin, date_end):
+    training = 'users/gertjang/trainingsetWaal25012018_UTM'
+    validation = 'users/gertjang/validationsetWaal25012018_UTM'
     pass
 
 
@@ -106,9 +116,9 @@ def get_map(id):
     date_begin = date_begin or ee.Date(date_begin)
     date_end = date_end or ee.Date(date_end)
 
-    bands = json['bands']
+    vis = json['vis']
 
-    image = maps[id](region, date_begin, date_end, bands)
+    image = maps[id](region, date_begin, date_end, vis)
 
     url = get_image_url(image)
 
@@ -121,13 +131,13 @@ def get_map(id):
 @flask_cors.cross_origin()
 def get_image_by_id():
     id = request.args.get('id')
-    bands = request.args.get('bands')
+    vis = request.args.get('vis')
 
     image = ee.Image(id)\
         .select(band_names['s2'], band_names['readable'])\
         .divide(10000)
 
-    image = visualize_image(image, bands)
+    image = visualize_image(image, vis)
 
     url = get_image_url(image)
 
@@ -154,15 +164,11 @@ def get_map_times(id):
     date_begin = date_begin or ee.Date(date_begin)
     date_end = date_end or ee.Date(date_end)
 
-    try:
-        images = get_sentinel_images(region, date_begin, date_end)
+    images = get_sentinel_images(region, date_begin, date_end)
 
-        image_times = ee.List(images.aggregate_array('system:time_start')) \
-            .map(to_date_time_string).getInfo()
-        image_ids = images.aggregate_array('system:id').getInfo()
-
-    except ee.exception as e:
-        return jsonify({ error: str(e) })
+    image_times = ee.List(images.aggregate_array('system:time_start')) \
+        .map(to_date_time_string).getInfo()
+    image_ids = images.aggregate_array('system:id').getInfo()
 
     return jsonify({'image_times': image_times, 'image_ids': image_ids})
 

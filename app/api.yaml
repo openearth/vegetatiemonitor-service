@@ -6,19 +6,8 @@ schemes:
   - https
 
 definitions:
-  ImageBands:
-    type: array
-    items:
-      type: string
-      enum:
-        - red
-        - green
-        - blue
-        - nir
-        - swir
-    minItems: 3
-    maxItems: 3
-    example: red,green,blue
+  ImageVis:
+    type: string
 
   MapId:
     type: string
@@ -47,7 +36,10 @@ definitions:
       {
         "dateBegin": "2016-01-01",
         "dateEnd": "2016-02-01",
-        "bands": ["red", "green", "blue"],
+        "vis": { 
+          "bands": ["red", "green", "blue"], 
+          "gamma": 2.0
+        },
         "region": {
           "geodesic": true,
           "type": "Polygon",
@@ -70,9 +62,9 @@ definitions:
       dateEnd:
         type: string
         format: date-time
-      bands:
+      vis:
         schema:
-          $ref: "#/definitions/ImageBands"
+          $ref: "#/definitions/ImageVis"
 
 info:
   description: Queries satellite images, spectral indices, and classifications from Google Earth Engine
@@ -119,11 +111,11 @@ paths:
           type: string
           example: COPERNICUS/S2/20160102T110129_20160102T144623_T31UGT
         - in: query
-          name: bands
+          name: vis
           required: true
-          default: swir,nir,green
+          default: { "bands": ["swir", "nir", "green"] }
           schema:
-            $ref: "#/definitions/ImageBands"
+            $ref: "#/definitions/ImageVis"
       responses:
         200:
           description: Image tile url
