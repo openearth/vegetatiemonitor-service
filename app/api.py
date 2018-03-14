@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 from errors import errors
 
-# app.register_blueprint(errors)
+app.register_blueprint(errors)
 
 # register specs
 flasgger.Swagger(app, template_file='api.yaml')
@@ -59,13 +59,10 @@ def add_vis_parameter(vis, param, value):
 
     return vis
 
-
 def visualize_image(image, vis):
     min = 0.05
     max = [0.35, 0.35, 0.45]
     gamma = 1.4
-
-    print(vis)
 
     vis = add_vis_parameter(vis, 'min', min)
     vis = add_vis_parameter(vis, 'min', max)
@@ -239,8 +236,11 @@ def get_map(id):
 def get_image_by_id():
     id = request.args.get('id')
 
+<<<<<<< HEAD
     vis = request.get_json()
 
+=======
+>>>>>>> a4d9a221459b687cbd34c947d7a702694ada3cc9
     image = ee.Image(id) \
         .select(band_names['s2'], band_names['readable']) \
         .divide(10000)
