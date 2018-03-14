@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, redirect, request
-import flask_cors 
+import flask_cors
 from flasgger import Swagger
 import ee
 
@@ -14,6 +14,7 @@ import flasgger
 app = Flask(__name__)
 
 from errors import errors
+
 app.register_blueprint(errors)
 
 # register specs
@@ -42,14 +43,29 @@ def get_sentinel_images(region, date_begin, date_end):
 
     return images
 
-def visualize_image(image, opt_vis):
-    vis = {'min': 0.05, 'max': [0.35, 0.35, 0.45], 'gamma': 1.4}
 
-    if opt_vis['gamma']:
-        vis['gamma'] = opt_vis['gamma']
+def add_vis_parameter(vis, param, value):
+    """
+    Adds parameter to vis dictionary if not exsit
+    :param vis:
+    :param param:
+    :param value:
+    :return:
+    """
+    if not param in vis:
+        vis[param] = value
 
-    if opt_vis['bands']:
-        vis['bands'] = opt_vis['bands']
+    return vis
+
+
+def visualize_image(image, vis):
+    min = 0.05
+    max = [0.35, 0.35, 0.45]
+    gamma = 1.4
+
+    vis = add_vis_parameter(vis, 'min', min)
+    vis = add_vis_parameter(vis, 'min', max)
+    vis = add_vis_parameter(vis, 'gamma', gamma)
 
     return image.visualize(**vis)
 
@@ -65,19 +81,27 @@ def get_sentinel_image(region, date_begin, date_end, vis):
 
 
 def get_ndvi(region, date_begin, date_end, vis):
-    images = get_sentinel_images(region, date_begin, date_end)\
-             .map(lambda i: i.resample('bilinear')) 
-    
+    images = get_sentinel_images(region, date_begin, date_end) \
+        .map(lambda i: i.resample('bilinear'))
+
     image = ee.Image(images.mosaic()).divide(10000)
 
     ndvi = image.normalizedDifference(['nir', 'red'])
-    
-    # ignore the provided vis parameter in case of ndvi
-    palette = ['000000', '252525', '525252', '737373', '969696', 'bdbdbd', 'd9d9d9', 'f0f0f0', 'ffffff',\
-               'f7fcf5', 'e5f5e0', 'c7e9c0', 'a1d99b', '74c476', '41ab5d', '238b45', '006d2c', '00441b']
-    vis = {'min': -1, 'max': 1, 'palette': palette}
-    
+
+    # set default vis parameters if not provided
+
+    palette = ['000000', '252525', '525252', '737373', '969696', 'bdbdbd',
+               'd9d9d9', 'f0f0f0', 'ffffff', 'f7fcf5', 'e5f5e0', 'c7e9c0',
+               'a1d99b', '74c476', '41ab5d', '238b45', '006d2c', '00441b']
+    min = -1
+    max = 1
+
+    vis = add_vis_parameter(vis, 'palette', palette)
+    vis = add_vis_parameter(vis, 'min', min)
+    vis = add_vis_parameter(vis, 'max', max)
+
     return ndvi.visualize(**vis)
+
 
 def get_landuse(region, date_begin, date_end):
     training = 'users/gertjang/trainingsetWaal25012018_UTM'
@@ -144,8 +168,8 @@ def get_image_by_id():
     id = request.args.get('id')
     vis = request.args.get('vis')
 
-    image = ee.Image(id)\
-        .select(band_names['s2'], band_names['readable'])\
+    image = ee.Image(id) \
+        .select(band_names['s2'], band_names['readable']) \
         .divide(10000)
 
     image = visualize_image(image, vis)
