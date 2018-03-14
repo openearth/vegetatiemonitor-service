@@ -26,7 +26,7 @@ band_names = {
 
 
 def to_date_time_string(millis):
-    return ee.Date(millis).format('YYYY-MM-dd HH:mm')
+    return ee.Date(millis).format()
 
 
 def get_sentinel_images(region, date_begin, date_end):
