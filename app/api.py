@@ -64,9 +64,20 @@ def get_sentinel_image(region, date_begin, date_end, vis):
     return image
 
 
-def get_ndvi(region, date_begin, date_end):
-    pass
+def get_ndvi(region, date_begin, date_end, vis):
+    images = get_sentinel_images(region, date_begin, date_end)\
+             .map(lambda i: i.resample('bilinear')) 
+    
+    image = ee.Image(images.mosaic()).divide(10000)
 
+    ndvi = image.normalizedDifference(['nir', 'red'])
+    
+    # ignore the provided vis parameter in case of ndvi
+    palette = ['000000', '252525', '525252', '737373', '969696', 'bdbdbd', 'd9d9d9', 'f0f0f0', 'ffffff',\
+               'f7fcf5', 'e5f5e0', 'c7e9c0', 'a1d99b', '74c476', '41ab5d', '238b45', '006d2c', '00441b']
+    vis = {'min': -1, 'max': 1, 'palette': palette}
+    
+    return ndvi.visualize(**vis)
 
 def get_landuse(region, date_begin, date_end):
     training = 'users/gertjang/trainingsetWaal25012018_UTM'
