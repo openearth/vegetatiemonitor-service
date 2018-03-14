@@ -5,8 +5,6 @@ errors = Blueprint('errors', __name__)
 
 @errors.app_errorhandler(Exception)
 def handle_unexpected_error(error):
-    print(error)
-
     status_code = 500
     success = False
     response = {

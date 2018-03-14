@@ -8,7 +8,11 @@ schemes:
 definitions:
   ImageVis:
     type: string
-
+    example:
+      {
+        "bands": ["red", "green", "blue"],
+        "gamma": 2.0
+      }
   MapId:
     type: string
     enum:
@@ -37,7 +41,7 @@ definitions:
         "dateBegin": "2016-07-20",
         "dateEnd": "2016-07-21",
         "vis": {
-          "bands": ["red", "green", "blue"], 
+          "bands": ["red", "green", "blue"],
           "gamma": 2.0
         },
         "region": {
@@ -63,8 +67,7 @@ definitions:
         type: string
         format: date-time
       vis:
-        schema:
-          $ref: "#/definitions/ImageVis"
+        $ref: "#/definitions/ImageVis"
 
 info:
   description: Queries satellite images, spectral indices, and classifications from Google Earth Engine
@@ -99,7 +102,7 @@ paths:
             "$ref": "#/definitions/MapUri"
 
   /image/:
-    get:
+    post:
       produces:
         - application/json
       description: Gets image by image id
@@ -110,10 +113,9 @@ paths:
           required: true
           type: string
           example: COPERNICUS/S2/20160102T110129_20160102T144623_T31UGT
-        - in: query
+        - in: body
           name: vis
-          required: true
-          default: { "bands": ["swir", "nir", "green"] }
+          required: false
           schema:
             $ref: "#/definitions/ImageVis"
       responses:
