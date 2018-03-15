@@ -111,7 +111,7 @@ def get_ndvi(region, date_begin, date_end, vis):
     return ndvi.visualize(**vis)
 
 
-def get_landuse(region, date_begin, date_end):
+def get_landuse(region, date_begin, date_end, vis):
     training_asset_id = 'users/gertjang/trainingsetWaal25012018_UTM'
     validation_asset_id = 'users/gertjang/validationsetWaal25012018_UTM'
     training_image_id = 'COPERNICUS/S2/20170526T105031_20170526T105518_T31UFT'
@@ -186,7 +186,7 @@ def get_landuse(region, date_begin, date_end):
     # return classified.randomVisualizer()
 
 
-def get_landuse_vs_legger(region, date_begin):
+def get_landuse_vs_legger(region, date_begin, date_end, vis):
     pass
 
 
