@@ -54,12 +54,16 @@ def add_vis_parameter(vis, param, value):
     :param value:
     :return:
     """
-    if not param in vis:
+    if param not in vis:
         vis[param] = value
 
     return vis
 
+
 def visualize_image(image, vis):
+    if not vis:
+        vis = {}
+
     min = 0.05
     max = [0.35, 0.35, 0.45]
     gamma = 1.4
@@ -88,6 +92,9 @@ def get_ndvi(region, date_begin, date_end, vis):
     image = ee.Image(images.mosaic()).divide(10000)
 
     ndvi = image.normalizedDifference(['nir', 'red'])
+
+    if not vis:
+        vis = {}
 
     # set default vis parameters if not provided
 
@@ -156,26 +163,27 @@ def get_landuse(region, date_begin, date_end):
     # print('Resubstitution error matrix: ', trainAccuracy);
     # print('Training overall accuracy: ', trainAccuracy.accuracy());
 
-    # replace color by SLD
-    # style = '\
-    #  <RasterSymbolizer>\
-    #    <ColorMap  type="intervals" extended="false" >\
-    #      <ColorMapEntry color="#cef2ff" quantity="-200" label="-200m"/>\
-    #      <ColorMapEntry color="#9cd1a4" quantity="0" label="0m"/>\
-    #      <ColorMapEntry color="#7fc089" quantity="50" label="50m" />\
-    #      <ColorMapEntry color="#9cc78d" quantity="100" label="100m" />\
-    #      <ColorMapEntry color="#b8cd95" quantity="250" label="250m" />\
-    #      <ColorMapEntry color="#d0d8aa" quantity="500" label="500m" />\
-    #      <ColorMapEntry color="#e1e5b4" quantity="750" label="750m" />\
-    #      <ColorMapEntry color="#f1ecbf" quantity="1000" label="1000m" />\
-    #      <ColorMapEntry color="#e2d7a2" quantity="1250" label="1250m" />\
-    #      <ColorMapEntry color="#d1ba80" quantity="1500" label="1500m" />\
-    #      <ColorMapEntry color="#d1ba80" quantity="10000" label="10000m" />\
-    #    </ColorMap>\
-    #  </RasterSymbolizer>';
-    # classified = classified.sldStyle(style)
+    # legger colors
+    style = '\
+      <RasterSymbolizer>\
+        <ColorMap  type="intervals" extended="false" >\
+          <ColorMapEntry color="#cef2ff" quantity="-200" label="-200m"/>\
+          <ColorMapEntry color="#9cd1a4" quantity="0" label="0m"/>\
+          <ColorMapEntry color="#7fc089" quantity="50" label="50m" />\
+          <ColorMapEntry color="#9cc78d" quantity="100" label="100m" />\
+          <ColorMapEntry color="#b8cd95" quantity="250" label="250m" />\
+          <ColorMapEntry color="#d0d8aa" quantity="500" label="500m" />\
+          <ColorMapEntry color="#e1e5b4" quantity="750" label="750m" />\
+          <ColorMapEntry color="#f1ecbf" quantity="1000" label="1000m" />\
+          <ColorMapEntry color="#e2d7a2" quantity="1250" label="1250m" />\
+          <ColorMapEntry color="#d1ba80" quantity="1500" label="1500m" />\
+          <ColorMapEntry color="#d1ba80" quantity="10000" label="10000m" />\
+        </ColorMap>\
+      </RasterSymbolizer>'
 
-    return classified.randomVisualizer()
+    return classified.sldStyle(style)
+
+    # return classified.randomVisualizer()
 
 
 def get_landuse_vs_legger(region, date_begin):
@@ -215,7 +223,11 @@ def get_map(id):
     region = json['region']
 
     date_begin = json['dateBegin']
-    date_end = json['dateEnd']
+
+    if 'dateEnd' not in json:
+        date_end = ee.Date(date_begin).advance(1, 'day')
+    else:
+        date_end = json['dateEnd']
 
     date_begin = date_begin or ee.Date(date_begin)
     date_end = date_end or ee.Date(date_end)
