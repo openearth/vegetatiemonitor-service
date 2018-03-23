@@ -111,11 +111,27 @@ def get_ndvi(region, date_begin, date_end, vis):
     return ndvi.visualize(**vis)
 
 
-def get_landuse(region, date_begin, date_end, vis):
+# style using legger colors
+styleLegger = '\
+  <RasterSymbolizer>\
+    <ColorMap  type="intervals" extended="false" >\
+      <ColorMapEntry color="#BDEEFF" quantity="1" label="Water"/>\
+      <ColorMapEntry color="#FF817E" quantity="2" label="Verhard oppervlak"/>\
+      <ColorMapEntry color="#EEFAD4" quantity="3" label="Gras en Akker"/>\
+      <ColorMapEntry color="#DEBDDE" quantity="4" label="Riet en Ruigte"/>\
+      <ColorMapEntry color="#73BF73" quantity="5" label="Bos"/>\
+      <ColorMapEntry color="#D97A36" quantity="6" label="Struweel"/>\
+      <ColorMapEntry color="#000000" quantity="10" label="Unknown"/>\
+    </ColorMap>\
+  </RasterSymbolizer>'
+
+def _get_landuse(region, date_begin, date_end, vis):
+
     training_asset_id = 'users/gertjang/trainingsetWaal25012018_UTM'
     validation_asset_id = 'users/gertjang/validationsetWaal25012018_UTM'
     training_image_id = 'COPERNICUS/S2/20170526T105031_20170526T105518_T31UFT'
-    bounds_asset_id = 'users/cindyvdvries/vegetatiemonitor/beheergrens'
+    # bounds_asset_id = 'users/cindyvdvries/vegetatiemonitor/beheergrens'
+    bounds_asset_id = 'users/gena/beheergrens-geo'
 
     bounds = ee.FeatureCollection(bounds_asset_id)
 
@@ -128,7 +144,7 @@ def get_landuse(region, date_begin, date_end, vis):
     # train classifier using specific image
     imageTraining = ee.Image(training_image_id) \
         .select(band_names['s2'], band_names['readable']) \
-        .map(lambda i: i.resample('bilinear')) \
+        .resample('bilinear') \
         .divide(10000)
 
     trainingSet = ee.FeatureCollection(training_asset_id)
@@ -146,15 +162,23 @@ def get_landuse(region, date_begin, date_end, vis):
     # classify image
     classified = image.classify(classifier) \
         .clip(bounds) \
-        .focal_mode(10, 'circle', 'meters')
+        # .focal_mode(10, 'circle', 'meters')
 
     original_classes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
                         16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
 
-    legger_classes = [8, 8, 8, 8, 8, 8, 8, 9, 8, 8, 8, 8, 8, 8, 10,
-                      9, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 3, 3, 10]
+    legger_classes = [1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 0, 2, 3, 3, 
+                      3, 4, 4, 4, 5, 5, 5, 6, 5, 5, 0]
 
     classified = classified.remap(original_classes, legger_classes)
+
+    mask = classified\
+        .eq([1, 2, 3, 4, 5, 6])\
+        .reduce(ee.Reducer.anyNonZero())
+   
+    return classified\
+        .updateMask(mask)
+
 
     # TODO: return as additional info in reply
     # get confusion matrix and training accurracy
@@ -163,31 +187,50 @@ def get_landuse(region, date_begin, date_end, vis):
     # print('Resubstitution error matrix: ', trainAccuracy);
     # print('Training overall accuracy: ', trainAccuracy.accuracy());
 
-    # legger colors
-    style = '\
-      <RasterSymbolizer>\
-        <ColorMap  type="intervals" extended="false" >\
-          <ColorMapEntry color="#cef2ff" quantity="-200" label="-200m"/>\
-          <ColorMapEntry color="#9cd1a4" quantity="0" label="0m"/>\
-          <ColorMapEntry color="#7fc089" quantity="50" label="50m" />\
-          <ColorMapEntry color="#9cc78d" quantity="100" label="100m" />\
-          <ColorMapEntry color="#b8cd95" quantity="250" label="250m" />\
-          <ColorMapEntry color="#d0d8aa" quantity="500" label="500m" />\
-          <ColorMapEntry color="#e1e5b4" quantity="750" label="750m" />\
-          <ColorMapEntry color="#f1ecbf" quantity="1000" label="1000m" />\
-          <ColorMapEntry color="#e2d7a2" quantity="1250" label="1250m" />\
-          <ColorMapEntry color="#d1ba80" quantity="1500" label="1500m" />\
-          <ColorMapEntry color="#d1ba80" quantity="10000" label="10000m" />\
-        </ColorMap>\
-      </RasterSymbolizer>'
 
-    return classified.sldStyle(style)
+def get_landuse(region, date_begin, date_end, vis):
+    # get classified as raster
+    classified = _get_landuse(region, date_begin, date_end, vis)
 
-    # return classified.randomVisualizer()
+    return classified\
+        .sldStyle(styleLegger)
 
 
 def get_landuse_vs_legger(region, date_begin, date_end, vis):
-    pass
+    # legger
+    leggerFeatures = ee.FeatureCollection('users/gena/vegetatie-vlakken-geo')
+
+    mapping = {
+      'Water': 1,
+      'Verhard oppervlak': 2,
+      'Gras en Akker': 3,
+      'Riet en Ruigte': 4,
+      'Bos': 5,
+      'Struweel': 6,
+      '': 0
+    }
+  
+    mapping = ee.Dictionary(mapping)
+  
+    leggerFeatures = leggerFeatures\
+        .map(lambda f: f.set('type', mapping.get(f.get('VL_KLASSE'))))
+
+    legger = ee.Image().int().paint(leggerFeatures, 'type')
+
+    mask = legger.eq([1, 2, 3, 4, 5, 6]).reduce(ee.Reducer.anyNonZero())
+    legger = legger.updateMask(mask)
+  
+    # classification
+    landuse = _get_landuse(region, date_begin, date_end, vis)
+  
+    diff = landuse.subtract(legger)
+
+    palette = [ '1a9850', '91cf60', 'd9ef8b', 'ffffbf', 'fee08b', 'fc8d59', 'd73027' ]
+
+
+    diff = diff.visualize(**{'min': -5, 'max': 5, 'palette': palette})
+  
+    return diff
 
 
 maps = {
