@@ -11,8 +11,6 @@ def client():
 
 def test_get_image_urls(client):
     input = '''{
-        "dateBegin": "2017-07-01",
-        "dateEnd": "2017-07-15",
         "region": {
             "type": "FeatureCollection",
             "features": [

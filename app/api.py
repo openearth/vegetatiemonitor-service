@@ -3,7 +3,7 @@ import flask_cors
 from flasgger import Swagger
 import ee
 
-from . import error_handler
+import error_handler
 
 # import connexion
 
@@ -399,13 +399,16 @@ def get_map_zonal_info(id):
 
     region = json['region']
 
-    date_begin = json['dateBegin']
-    date_end = json['dateEnd']
+    date_begin = None
+    date_end = None
+
+    if 'dataBegin' in json:
+        date_begin = ee.Date(json['dateBegin'])
+
+    if 'dataEnd' in json:
+        date_end = ee.Date(json['dateEnd'])
 
     scale = json['scale']
-
-    date_begin = date_begin or ee.Date(date_begin)
-    date_end = date_end or ee.Date(date_end)
 
     info = zonal_info[id](region, date_begin, date_end, scale)
 
