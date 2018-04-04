@@ -46,16 +46,16 @@ def test_get_zonal_info_legger(client):
 
     output_expected = '''[
         {
-            "id": 1, 
-            "area_per_type": [
-                {"type": "0", "area": 567062.7642463235}, 
-                {"type": "1", "area": 1624781.6086224725}, 
-                {"type": "2", "area": 252953.091796875}, 
-                {"type": "3", "area": 1854597.840469899}, 
-                {"type": "4", "area": 682186.362109375}, 
-                {"type": "5", "area": 382541.0576171875}, 
-                {"type": "5", "area": 104886.63330078125}
-            ]
+           "id": 1,
+           "area_per_type": [
+                {"area": 567062.7642463235, "type": "0"}, 
+                {"area": 1624781.6086224725, "type": "1"}, 
+                {"area": 252953.091796875, "type": "2"}, 
+                {"area": 1854597.840469899, "type": "3"}, 
+                {"area": 682186.362109375, "type": "4"}, 
+                {"area": 382541.0576171875, "type": "5"}, 
+                {"area": 104886.63330078125, "type": "6"}
+           ]
         }
     ]'''
 
@@ -143,23 +143,6 @@ def test_get_map_landuse(client):
     assert r.status_code == 200
 
     output = json.loads(r.get_data(as_text=True))
-
-    output_expected = '''[
-        {
-            "id": 1, 
-            "area_per_type": [
-                {"type": "", "area": 567062.7642463235}, 
-                {"type": "Water", "area": 1624781.6086224725}, 
-                {"type": "Verhard oppervlak", "area": 252953.091796875}, 
-                {"type": "Gras en Akker", "area": 1854597.840469899}, 
-                {"type": "Riet en Ruigte", "area": 682186.362109375}, 
-                {"type": "Bos", "area": 382541.0576171875}, 
-                {"type": "Struweel", "area": 104886.63330078125}
-            ]
-        }
-    ]'''
-
-    output_expected = sorted(json.loads(output_expected))
 
     open('test_output_landuse.json', 'w').write(r.get_data(as_text=True))
 
