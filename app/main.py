@@ -1,3 +1,6 @@
+import sys,os
+sys.path.append(os.getcwd())
+
 import ee
 
 def initialize_google_earth_engine():
@@ -13,9 +16,10 @@ def initialize_google_earth_engine():
 
 initialize_google_earth_engine()
 
-from . import api  # initialize EE first
+# from . import api  # initialize EE first
+from api import app
 
 if __name__ == '__main__':
     # This is used when running locally. Gunicorn is used to run the
     # application on Google App Engine. See entrypoint in app.yaml.
-    api.app.run(host='127.0.0.1', port=8080, debug=True)
+    app.run(host='127.0.0.1', port=8080, debug=True)

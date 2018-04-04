@@ -18,6 +18,7 @@ definitions:
     enum:
       - satellite
       - ndvi
+      - legger
       - landuse
       - landuse-legger
       - landuse-vs-legger

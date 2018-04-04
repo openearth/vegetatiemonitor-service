@@ -166,7 +166,7 @@ def get_ndvi(region, date_begin, date_end, vis):
     return ndvi.visualize(**vis)
 
 
-def _get_landuse(region, date_begin, date_end, vis):
+def _get_landuse(region, date_begin, date_end):
     training_asset_id = 'users/gertjang/trainingsetWaal25012018_UTM'
     validation_asset_id = 'users/gertjang/validationsetWaal25012018_UTM'
     training_image_id = 'COPERNICUS/S2/20170526T105031_20170526T105518_T31UFT'
@@ -229,7 +229,7 @@ def _get_landuse(region, date_begin, date_end, vis):
 
 def get_landuse(region, date_begin, date_end, vis):
     # get classified as raster
-    classified = _get_landuse(region, date_begin, date_end, vis)
+    classified = _get_landuse(region, date_begin, date_end)
 
     return classified \
         .sldStyle(legger_style)
@@ -242,7 +242,7 @@ def get_landuse_vs_legger(region, date_begin, date_end, vis):
     legger = legger.updateMask(mask)
 
     # classification
-    landuse = _get_landuse(region, date_begin, date_end, vis)
+    landuse = _get_landuse(region, date_begin, date_end)
 
     diff = landuse.subtract(legger)
 
@@ -265,17 +265,67 @@ def _get_legger_image():
 
     return legger
 
+def get_legger(region, date_begin, date_end, vis):
+    leger = _get_legger_image()
+
+    return leger \
+        .sldStyle(legger_style)
 
 maps = {
     'satellite': get_sentinel_image,
     'ndvi': get_ndvi,
     'landuse': get_landuse,
-    'landuse-vs-legger': get_landuse_vs_legger
+    'landuse-vs-legger': get_landuse_vs_legger,
+    'legger': get_legger
 }
 
+def _get_zonal_info(features, image, scale):
+    area = ee.Image.pixelArea().rename('area')
+
+    image = area.addBands(image)
+
+    # for every input feature, compute area
+
+    def get_feature_info(f):
+        f = ee.Feature(f)
+
+        reducer = ee.Reducer.sum().group(**{
+            "groupField": 1,
+            "groupName": 'type',
+        })
+
+        geom = f.geometry()
+
+        area = image.reduceRegion(reducer, geom, scale)
+
+        def format_area(o):
+            o = ee.Dictionary(o)
+
+            area = o.get('sum')
+            t = ee.Number(o.get('type')).format('%d')
+
+            return {
+                "area": area,
+                "type": t
+            }
+
+        area = ee.List(area.get('groups')).map(format_area)
+
+        return {
+            "id": f.get('id'),
+            "area_per_type": area
+        }
+
+    return features.toList(5000).map(get_feature_info)
 
 def get_zonal_info_landuse(region, date_begin, date_end, scale):
-    pass
+    features = ee.FeatureCollection(region["features"])
+
+    image = _get_landuse(features.geometry(), date_begin, date_end)
+
+    info = _get_zonal_info(features, image, scale)
+
+    return info.getInfo()
 
 
 def get_zonal_info_landuse_vs_legger(region, date_begin, date_end, scale):
@@ -289,44 +339,9 @@ def get_zonal_info_ndvi(region, date_begin, date_end, scale):
 def get_zonal_info_legger(region, date_begin, date_end, scale):
     features = ee.FeatureCollection(region["features"])
 
-    area = ee.Image.pixelArea().rename('area')
+    image = _get_legger_image()
 
-    legger_image = _get_legger_image()
-    legger_image = area.addBands(legger_image)
-
-    # for every input feature, compute area of legger types
-
-    def get_feature_info(f):
-        f = ee.Feature(f)
-
-        reducer = ee.Reducer.sum().group(**{
-            "groupField": 1,
-            "groupName": 'type',
-        })
-
-        geom = f.geometry()
-
-        area = legger_image.reduceRegion(reducer, geom, scale)
-
-        def format_area(o):
-            o = ee.Dictionary(o)
-
-            area = o.get('sum')
-            type = ee.Number(o.get('type')).format('%d')
-
-            return {
-                "area": area,
-                "type": classes_legger.get(type)
-            }
-
-        area = ee.List(area.get('groups')).map(format_area)
-
-        return {
-            "id": f.get('id'),
-            "area_per_type": area
-        }
-
-    info = features.toList(5000).map(get_feature_info)
+    info = _get_zonal_info(features, image, scale)
 
     return info.getInfo()
 
@@ -373,8 +388,11 @@ def get_map(id):
     date_begin = date_begin or ee.Date(date_begin)
     date_end = date_end or ee.Date(date_end)
 
-    vis = json['vis']
+    vis = None
+    if 'vis' in json:
+        vis = json['vis']
 
+ 
     image = maps[id](region, date_begin, date_end, vis)
 
     url = get_image_url(image)
