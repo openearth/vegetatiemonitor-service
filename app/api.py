@@ -69,7 +69,7 @@ def visualize_image(image, vis):
     gamma = 1.4
 
     vis = add_vis_parameter(vis, 'min', min)
-    vis = add_vis_parameter(vis, 'min', max)
+    vis = add_vis_parameter(vis, 'max', max)
     vis = add_vis_parameter(vis, 'gamma', gamma)
 
     return image.visualize(**vis)
