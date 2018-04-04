@@ -1,7 +1,7 @@
+import sys,os
+sys.path.append(os.getcwd())
+
 import ee
-
-from api import app
-
 
 def initialize_google_earth_engine():
     EE_ACCOUNT = 'vegetatie-monitor@appspot.gserviceaccount.com'
@@ -15,6 +15,9 @@ def initialize_google_earth_engine():
 
 
 initialize_google_earth_engine()
+
+# from . import api  # initialize EE first
+from api import app
 
 if __name__ == '__main__':
     # This is used when running locally. Gunicorn is used to run the

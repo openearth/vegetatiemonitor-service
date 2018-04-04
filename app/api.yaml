@@ -18,7 +18,9 @@ definitions:
     enum:
       - satellite
       - ndvi
+      - legger
       - landuse
+      - landuse-legger
       - landuse-vs-legger
 
   MapUri:
@@ -101,26 +103,47 @@ paths:
           schema:
             "$ref": "#/definitions/MapUri"
 
-  /image/:
+  /map/{id}/zonal-info/:
     post:
+      consumes:
+        - application/json
       produces:
         - application/json
-      description: Gets image by image id
-      operationId: getImageById
+      description: For a given region (feature collection) and start/end times, get zonal statistics
+      operationId: getImageZonalInfo
       parameters:
-        - in: query
+        - in: path
           name: id
           required: true
-          type: string
-          example: COPERNICUS/S2/20160102T110129_20160102T144623_T31UGT
-        - in: body
-          name: vis
-          required: false
+          default: 'satellite'
           schema:
-            $ref: "#/definitions/ImageVis"
+            $ref: "#/definitions/MapId"
+        - in: body
+          name: body
+          description: The filter for map request
+          schema:
+              $ref: "#/definitions/MapFilter"
       responses:
         200:
-          description: Image tile url
+          description: Array of zonal statistics per feature or geometry
+          examples: [
+            {
+              "id": "feature1",
+              "area": [
+                "class1": 1000,
+                "class2": 2000,
+                "class3": 3000
+              ]
+            },
+            {
+              "id": "feature2",
+              "area": [
+                "class1": 1000,
+                "class2": 2000,
+                "class3": 3000
+              ]
+            }
+          ]
           schema:
             "$ref": "#/definitions/MapUri"
 
@@ -162,3 +185,27 @@ paths:
             }
           schema:
             "$ref": "#/definitions/MapUri"
+
+  /image/:
+    post:
+      produces:
+        - application/json
+      description: Gets image by image id
+      operationId: getImageById
+      parameters:
+        - in: query
+          name: id
+          required: true
+          type: string
+          example: COPERNICUS/S2/20160102T110129_20160102T144623_T31UGT
+        - in: body
+          name: vis
+          required: false
+          schema:
+            $ref: "#/definitions/ImageVis"
+      responses:
+        200:
+          description: Image tile url
+          schema:
+            "$ref": "#/definitions/MapUri"
+
