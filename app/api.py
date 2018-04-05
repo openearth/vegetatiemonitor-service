@@ -56,6 +56,7 @@ classes_legger = ee.Dictionary.fromLists(
     legger_classes.keys()
 )
 
+
 def to_date_time_string(millis):
     return ee.Date(millis).format('YYYY-MM-dd HH:mm')
 
