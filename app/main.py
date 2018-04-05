@@ -1,7 +1,9 @@
-import sys,os
+import sys, os
+
 sys.path.append(os.getcwd())
 
 import ee
+
 
 def initialize_google_earth_engine():
     EE_ACCOUNT = 'vegetatie-monitor@appspot.gserviceaccount.com'

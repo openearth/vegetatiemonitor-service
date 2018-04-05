@@ -52,36 +52,9 @@ legger_classes = {
 legger_classes = ee.Dictionary(legger_classes)
 
 classes_legger = ee.Dictionary.fromLists(
-  legger_classes.values().map(lambda o: ee.Number(o).format('%d')),
-  legger_classes.keys()
+    legger_classes.values().map(lambda o: ee.Number(o).format('%d')),
+    legger_classes.keys()
 )
-
-# style using legger colors
-legger_style = '\
-  <RasterSymbolizer>\
-    <ColorMap  type="intervals" extended="false" >\
-      <ColorMapEntry color="#BDEEFF" quantity="1" label="Water"/>\
-      <ColorMapEntry color="#FF817E" quantity="2" label="Verhard oppervlak"/>\
-      <ColorMapEntry color="#EEFAD4" quantity="3" label="Gras en Akker"/>\
-      <ColorMapEntry color="#DEBDDE" quantity="4" label="Riet en Ruigte"/>\
-      <ColorMapEntry color="#73BF73" quantity="5" label="Bos"/>\
-      <ColorMapEntry color="#D97A36" quantity="6" label="Struweel"/>\
-      <ColorMapEntry color="#000000" quantity="10" label="Unknown"/>\
-    </ColorMap>\
-  </RasterSymbolizer>'
-
-legger_classes = {
-    'Water': 1,
-    'Verhard oppervlak': 2,
-    'Gras en Akker': 3,
-    'Riet en Ruigte': 4,
-    'Bos': 5,
-    'Struweel': 6,
-    '': 0
-}
-
-legger_classes = ee.Dictionary(legger_classes)
-
 
 def to_date_time_string(millis):
     return ee.Date(millis).format('YYYY-MM-dd HH:mm')
@@ -212,12 +185,12 @@ def _get_landuse(region, date_begin, date_end):
 
     classified = classified.remap(original_classes, legger_classes)
 
-    mask = classified \
-        .eq([1, 2, 3, 4, 5, 6]) \
-        .reduce(ee.Reducer.anyNonZero())
+    # mask = classified \
+    #    .eq([1, 2, 3, 4, 5, 6]) \
+    #    .reduce(ee.Reducer.anyNonZero())
 
     return classified \
-        .updateMask(mask)
+        #    .updateMask(mask)
 
     # TODO: return as additional info in reply
     # get confusion matrix and training accurracy
@@ -265,11 +238,13 @@ def _get_legger_image():
 
     return legger
 
+
 def get_legger(region, date_begin, date_end, vis):
     leger = _get_legger_image()
 
     return leger \
         .sldStyle(legger_style)
+
 
 maps = {
     'satellite': get_sentinel_image,
@@ -278,6 +253,7 @@ maps = {
     'landuse-vs-legger': get_landuse_vs_legger,
     'legger': get_legger
 }
+
 
 def _get_zonal_info(features, image, scale):
     area = ee.Image.pixelArea().rename('area')
@@ -301,12 +277,12 @@ def _get_zonal_info(features, image, scale):
         def format_area(o):
             o = ee.Dictionary(o)
 
-            area = o.get('sum')
             t = ee.Number(o.get('type')).format('%d')
+            area = o.get('sum')
 
             return {
-                "area": area,
-                "type": t
+                "type": t,
+                "area": area
             }
 
         area = ee.List(area.get('groups')).map(format_area)
@@ -317,6 +293,7 @@ def _get_zonal_info(features, image, scale):
         }
 
     return features.toList(5000).map(get_feature_info)
+
 
 def get_zonal_info_landuse(region, date_begin, date_end, scale):
     features = ee.FeatureCollection(region["features"])
@@ -392,7 +369,6 @@ def get_map(id):
     if 'vis' in json:
         vis = json['vis']
 
- 
     image = maps[id](region, date_begin, date_end, vis)
 
     url = get_image_url(image)
@@ -420,10 +396,10 @@ def get_map_zonal_info(id):
     date_begin = None
     date_end = None
 
-    if 'dataBegin' in json:
+    if 'dateBegin' in json:
         date_begin = ee.Date(json['dateBegin'])
 
-    if 'dataEnd' in json:
+    if 'dateEnd' in json:
         date_end = ee.Date(json['dateEnd'])
 
     scale = json['scale']

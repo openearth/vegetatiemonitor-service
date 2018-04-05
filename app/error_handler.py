@@ -5,6 +5,7 @@ import traceback
 
 error_handler = Blueprint('errors', __name__)
 
+
 @error_handler.app_errorhandler(Exception)
 def handle_unexpected_error(error):
     print(traceback.print_exc())
