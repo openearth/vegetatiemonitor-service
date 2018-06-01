@@ -1,5 +1,7 @@
 # Viewer
 
+[![Build Status](https://travis-ci.org/openearth/vegetatiemonitor-service.svg?branch=master)](https://travis-ci.org/openearth/vegetatiemonitor-service)
+
 > Main repository of the viewer: https://github.com/openearth/vegetatiemonitor
 
 # vegetatiemonitor-service
