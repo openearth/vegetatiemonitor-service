@@ -9,12 +9,23 @@ def initialize_google_earth_engine():
     EE_ACCOUNT = 'vegetatie-monitor@appspot.gserviceaccount.com'
     EE_PRIVATE_KEY_FILE = 'privatekey.json'
 
+    # if 'privatekey.json' is defined in environmental variable - write it to file
+    if EE_PRIVATE_KEY_FILE in os.environ:
+        content = os.environ[EE_PRIVATE_KEY_FILE]
+
+        with open(EE_PRIVATE_KEY_FILE, 'w') as f:
+            f.write(content)
+
     # Initialize the EE API.
     # Use our App Engine service account's credentials.
     EE_CREDENTIALS = ee.ServiceAccountCredentials(EE_ACCOUNT,
                                                   EE_PRIVATE_KEY_FILE)
     ee.Initialize(EE_CREDENTIALS)
 
+    # delete temporary private key file
+    if EE_PRIVATE_KEY_FILE in os.environ:
+        os.unlink(EE_PRIVATE_KEY_FILE)
+    
 
 initialize_google_earth_engine()
 
