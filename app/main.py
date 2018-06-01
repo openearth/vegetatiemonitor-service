@@ -13,7 +13,9 @@ def initialize_google_earth_engine():
     # if 'privatekey.json' is defined in environmental variable - write it to file
     if 'key' in os.environ:
         print('Writing privatekey.json from environmental variable ...')
-        content = str(base64.b64decode(os.environ['key']))
+        content = base64.b64decode(os.environ['key']).decode('ascii')
+
+        print(content)
 
         with open(EE_PRIVATE_KEY_FILE, 'w') as f:
             f.write(content)
