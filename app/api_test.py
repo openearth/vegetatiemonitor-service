@@ -230,3 +230,37 @@ def test_export_landuse(client):
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
+
+def test_export_satellite_image(client):
+    input = '''{
+       "dateBegin": "2016-07-20",
+       "dateEnd": "2016-07-21",
+       "region": {
+           "coordinates": [[
+               [5.846, 51.984],
+               [5.849, 51.961],
+               [5.91, 51.96],
+               [5.916, 51.985],
+               [5.877, 51.99],
+               [5.846, 51.984]]],
+           "geodesic": true,
+           "type": "Polygon"
+       },
+       "vis": {
+            "bands": ["swir", "nir", "green"],
+            "min": 0.03, 
+            "max": 0.5
+       }
+    }'''
+
+    r = client.post('/map/satellite/export', data=input,
+                    content_type='application/json')
+
+    assert r.status_code == 200
+
+    output = json.loads(r.get_data(as_text=True))
+
+    open('test_output_export_satellite.json', 'w').write(r.get_data(as_text=True))
+
+    # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
+    assert 'https://earthengine.googleapis.com/api/download' in output['url']

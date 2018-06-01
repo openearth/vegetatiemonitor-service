@@ -62,7 +62,7 @@ def to_date_time_string(millis):
     return ee.Date(millis).format('YYYY-MM-dd HH:mm')
 
 
-def get_sentinel_images(region, date_begin, date_end):
+def get_satellite_images(region, date_begin, date_end):
     images = ee.ImageCollection('COPERNICUS/S2') \
         .select(band_names['s2'], band_names['readable']) \
         .filterBounds(region)
@@ -105,8 +105,8 @@ def visualize_image(image, vis):
     return image.visualize(**vis)
 
 
-def get_sentinel_image(region, date_begin, date_end, vis):
-    images = get_sentinel_images(region, date_begin, date_end)
+def get_satellite_image(region, date_begin, date_end, vis):
+    images = get_satellite_images(region, date_begin, date_end)
 
     image = ee.Image(images.mosaic()).divide(10000)
 
@@ -115,13 +115,17 @@ def get_sentinel_image(region, date_begin, date_end, vis):
     return image
 
 
-def get_ndvi(region, date_begin, date_end, vis):
-    images = get_sentinel_images(region, date_begin, date_end) \
+def _get_ndvi(date_begin, date_end, region):
+    images = get_satellite_images(region, date_begin, date_end) \
         .map(lambda i: i.resample('bilinear'))
-
     image = ee.Image(images.mosaic()).divide(10000)
-
     ndvi = image.normalizedDifference(['nir', 'red'])
+
+    return ndvi
+
+
+def get_ndvi(region, date_begin, date_end, vis):
+    ndvi = _get_ndvi(date_begin, date_end, region)
 
     if not vis:
         vis = {}
@@ -151,7 +155,7 @@ def _get_landuse(region, date_begin, date_end):
     bounds = ee.FeatureCollection(bounds_asset_id)
 
     # get an image given region and dates
-    images = get_sentinel_images(region, date_begin, date_end) \
+    images = get_satellite_images(region, date_begin, date_end) \
         .map(lambda i: i.resample('bilinear'))
 
     image = ee.Image(images.mosaic()).divide(10000)
@@ -210,16 +214,18 @@ def get_landuse(region, date_begin, date_end, vis):
         .sldStyle(legger_style)
 
 
-def get_landuse_vs_legger(region, date_begin, date_end, vis):
+def _get_landuse_vs_legger(date_begin, date_end, region):
     legger = _get_legger_image()
-
     mask = legger.eq([1, 2, 3, 4, 5, 6]).reduce(ee.Reducer.anyNonZero())
     legger = legger.updateMask(mask)
-
     # classification
     landuse = _get_landuse(region, date_begin, date_end)
-
     diff = landuse.subtract(legger)
+    return diff
+
+
+def get_landuse_vs_legger(region, date_begin, date_end, vis):
+    diff = _get_landuse_vs_legger(date_begin, date_end, region)
 
     # use RWS legger colors
     palette = ['1a9850', '91cf60', 'd9ef8b', 'ffffbf', 'fee08b', 'fc8d59',
@@ -249,11 +255,35 @@ def get_legger(region, date_begin, date_end, vis):
 
 
 maps = {
-    'satellite': get_sentinel_image,
+    'satellite': get_satellite_image,
     'ndvi': get_ndvi,
     'landuse': get_landuse,
     'landuse-vs-legger': get_landuse_vs_legger,
     'legger': get_legger
+}
+
+
+def export_satellite_image(region, date_begin, date_end, vis):
+    return get_satellite_image(region, date_begin, date_end, vis)
+
+
+def export_ndvi(region, date_begin, date_end, vis):
+    return _get_ndvi(region, date_begin, date_end, vis)
+
+
+def export_landuse(region, date_begin, date_end, vis):
+    return _get_landuse(region, date_begin, date_end)
+
+
+def export_landuse_vs_legger(region, date_begin, date_end, vis):
+    return _get_landuse_vs_legger(date_begin, date_end, region)
+
+
+exports = {
+    'satellite': export_satellite_image,
+    'ndvi': export_ndvi,
+    'landuse': export_landuse,
+    'landuse-vs-legger': export_landuse_vs_legger
 }
 
 
@@ -346,26 +376,6 @@ def get_image_url(image):
     return url
 
 
-def get_map_image(id, visualize=True):
-    json = request.get_json()
-    region = json['region']
-    date_begin = json['dateBegin']
-    if 'dateEnd' not in json:
-        date_end = ee.Date(date_begin).advance(1, 'day')
-    else:
-        date_end = json['dateEnd']
-    date_begin = date_begin or ee.Date(date_begin)
-    date_end = date_end or ee.Date(date_end)
-
-    vis = None
-    if 'vis' in json and visualize:
-        vis = json['vis']
-
-    image = maps[id](region, date_begin, date_end, vis)
-
-    return image
-
-
 @app.route('/map/<string:id>/export', methods=['POST'])
 @flask_cors.cross_origin()
 def export_map(id):
@@ -373,13 +383,34 @@ def export_map(id):
     Returns URL to the image file
     """
 
-    image = get_map_image(id, False)
-
     j = request.get_json()
+
     region = j['region']
+
+    date_begin = j['dateBegin']
+    if 'dateEnd' not in j:
+        date_end = ee.Date(date_begin).advance(1, 'day')
+    else:
+        date_end = j['dateEnd']
+    date_begin = date_begin or ee.Date(date_begin)
+    date_end = date_end or ee.Date(date_end)
+
+    vis = None
+    if 'vis' in j:
+        vis = j['vis']
+
     scale = 10
+    if 'scale' in j:
+        scale = j['scale']
+
+    image = exports[id](region, date_begin, date_end, vis)
+
+    format = 'tif'
+    if id == 'satellite':
+        format = 'png'
 
     url = image.getDownloadURL({
+        "format": format,
         "name": id,
         "scale": scale,
         "region": json.dumps(region)})
@@ -396,7 +427,21 @@ def get_map(id):
     Returns maps processed by Google Earth Engine
     """
 
-    image = get_map_image(id, True)
+    json = request.get_json()
+    region = json['region']
+    date_begin = json['dateBegin']
+    if 'dateEnd' not in json:
+        date_end = ee.Date(date_begin).advance(1, 'day')
+    else:
+        date_end = json['dateEnd']
+    date_begin = date_begin or ee.Date(date_begin)
+    date_end = date_end or ee.Date(date_end)
+
+    vis = None
+    if 'vis' in json:
+        vis = json['vis']
+
+    image = maps[id](region, date_begin, date_end, vis)
 
     url = get_image_url(image)
 
@@ -456,7 +501,7 @@ def get_map_times(id):
     date_begin = date_begin or ee.Date(date_begin)
     date_end = date_end or ee.Date(date_end)
 
-    images = get_sentinel_images(region, date_begin, date_end)
+    images = get_satellite_images(region, date_begin, date_end)
 
     image_times = ee.List(images.aggregate_array('system:time_start')) \
         .map(to_date_time_string).getInfo()
