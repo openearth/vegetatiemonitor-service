@@ -186,6 +186,35 @@ paths:
           schema:
             "$ref": "#/definitions/MapUri"
 
+  /map/{id}/export/:
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      description: For a given region and start/end times, export image as a GeoTIFF
+      operationId: exportImage
+      parameters:
+        - in: path
+          name: id
+          required: true
+          default: 'satellite'
+          schema:
+            $ref: "#/definitions/MapId"
+        - in: body
+          name: body
+          description: The filter for map request
+          schema:
+              $ref: "#/definitions/MapFilter"
+      responses:
+        200:
+          description: Exported image url
+          content:
+            text/plain:
+              schema:
+                type: string
+
+
   /image/:
     post:
       produces:

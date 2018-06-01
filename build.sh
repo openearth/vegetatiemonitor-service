@@ -1,5 +1,0 @@
-cd app
-
-pytest
-
-

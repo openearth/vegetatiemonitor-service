@@ -1,3 +1,4 @@
+import json
 from flask import Flask, jsonify, redirect, request
 import flask_cors
 from flasgger import Swagger
@@ -345,6 +346,49 @@ def get_image_url(image):
     return url
 
 
+def get_map_image(id, visualize=True):
+    json = request.get_json()
+    region = json['region']
+    date_begin = json['dateBegin']
+    if 'dateEnd' not in json:
+        date_end = ee.Date(date_begin).advance(1, 'day')
+    else:
+        date_end = json['dateEnd']
+    date_begin = date_begin or ee.Date(date_begin)
+    date_end = date_end or ee.Date(date_end)
+
+    vis = None
+    if 'vis' in json and visualize:
+        vis = json['vis']
+
+    image = maps[id](region, date_begin, date_end, vis)
+
+    return image
+
+
+@app.route('/map/<string:id>/export', methods=['POST'])
+@flask_cors.cross_origin()
+def export_map(id):
+    """
+    Returns URL to the image file
+    """
+
+    image = get_map_image(id, False)
+
+    j = request.get_json()
+    region = j['region']
+    scale = 10
+
+    url = image.getDownloadURL({
+        "name": id,
+        "scale": scale,
+        "region": json.dumps(region)})
+
+    results = {'url': url}
+
+    return jsonify(results)
+
+
 @app.route('/map/<string:id>/', methods=['POST'])
 @flask_cors.cross_origin()
 def get_map(id):
@@ -352,25 +396,7 @@ def get_map(id):
     Returns maps processed by Google Earth Engine
     """
 
-    json = request.get_json()
-
-    region = json['region']
-
-    date_begin = json['dateBegin']
-
-    if 'dateEnd' not in json:
-        date_end = ee.Date(date_begin).advance(1, 'day')
-    else:
-        date_end = json['dateEnd']
-
-    date_begin = date_begin or ee.Date(date_begin)
-    date_end = date_end or ee.Date(date_end)
-
-    vis = None
-    if 'vis' in json:
-        vis = json['vis']
-
-    image = maps[id](region, date_begin, date_end, vis)
+    image = get_map_image(id, True)
 
     url = get_image_url(image)
 
