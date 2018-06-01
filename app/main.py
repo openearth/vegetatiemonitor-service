@@ -1,4 +1,5 @@
 import sys, os
+import base64
 
 sys.path.append(os.getcwd())
 
@@ -12,7 +13,7 @@ def initialize_google_earth_engine():
     # if 'privatekey.json' is defined in environmental variable - write it to file
     if EE_PRIVATE_KEY_FILE in os.environ:
         print('Writing privatekey.json from environmental variable ...')
-        content = os.environ[EE_PRIVATE_KEY_FILE]
+        content = base64.b64decode(os.environ[EE_PRIVATE_KEY_FILE])
 
         with open(EE_PRIVATE_KEY_FILE, 'w') as f:
             f.write(content)
