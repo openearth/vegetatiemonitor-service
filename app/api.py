@@ -376,7 +376,7 @@ def get_image_url(image):
     return url
 
 
-@app.route('/map/<string:id>/export', methods=['POST'])
+@app.route('/map/<string:id>/export/', methods=['POST'])
 @flask_cors.cross_origin()
 def export_map(id):
     """
