@@ -268,7 +268,7 @@ def export_satellite_image(region, date_begin, date_end, vis):
 
 
 def export_ndvi(region, date_begin, date_end, vis):
-    return _get_ndvi(region, date_begin, date_end)
+    return _get_ndvi(date_begin, date_end, region)
 
 
 def export_landuse(region, date_begin, date_end, vis):
