@@ -219,7 +219,7 @@ def test_export_landuse(client):
        }
     }'''
 
-    r = client.post('/map/landuse/export', data=input,
+    r = client.post('/map/landuse/export/', data=input,
                     content_type='application/json')
 
     assert r.status_code == 200
@@ -253,7 +253,7 @@ def test_export_satellite_image(client):
        }
     }'''
 
-    r = client.post('/map/satellite/export', data=input,
+    r = client.post('/map/satellite/export/', data=input,
                     content_type='application/json')
 
     assert r.status_code == 200
