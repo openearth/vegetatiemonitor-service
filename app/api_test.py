@@ -130,21 +130,21 @@ def test_get_zonal_info_landuse(client):
 
     output = sorted(json.loads(s))
 
-    print(output)
+    output_expected = '''[
+      {
+        "area_per_type": 
+          [
+            {"area": 2048931.5563687193, "type": "1"}, 
+            {"area": 1345652.432285922, "type": "2"}, 
+            {"area": 1565529.7482823988, "type": "3"}, 
+            {"area": 869991.4018554688, "type": "4"}, 
+            {"area": 234473.0048828125, "type": "5"}, 
+            {"area": 592325.3432617188, "type": "6"}
+          ], 
+          "id": 1
+      }
+    ]'''
 
-    output_expected = '''[{
-        "id": 1,
-        "area_per_type": [
-            {"area": 1751665.8099475338, "type": "1"},
-            {"area": 956930.1705805759, "type": "2"},
-            {"area": 1502966.2117359836, "type": "3"},
-            {"area": 1349449.4360236675, "type": "4"},
-            {"area": 1149038.0933900122, "type": "8"},
-            {"area": 5964592.139388022, "type": "9"},
-            {"area": 829810.1814893535, "type": "10"}
-        ] 
-    }]
-    '''
 
     output_expected = sorted(json.loads(output_expected))
 
