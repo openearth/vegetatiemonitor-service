@@ -20,10 +20,10 @@ app.register_blueprint(error_handler.error_handler)
 Swagger(app, template_file='api.yaml')
 
 band_names = {
-    's2': ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B9', 'B10',
-           'B11', 'B12'],
-    'readable': ['coastal', 'blue', 'green', 'red', 'red2', 'red3', 'red4',
-                 'nir', 'nir2', 'water_vapour', 'cirrus', 'swir', 'swir2']
+    's2': ['B11', 'B8', 'B3', 'B2', 'B4', 'B5', 'B6', 'B7',
+           'B8A', 'B9', 'B10'],
+    'readable': ['swir', 'nir', 'green', 'blue', 'red', 'red2', 'red3', 'red4',
+                 'nir2', 'water_vapour', 'cirrus']
 }
 
 # style using legger colors
@@ -146,6 +146,72 @@ def get_ndvi(region, date_begin, date_end, vis):
 
 
 def _get_landuse(region, date_begin, date_end):
+    """
+    Computes landuse image using random forest algorithm given a (composite) image.
+    Uses RWS Legger classification as a ground-truth.
+    :param region:
+    :param date_begin:
+    :param date_end:
+    :return:
+    """
+
+    legger_id = 'users/gertjang/FI_Rijn_Maas_merged_2012_numfdls'
+
+    legger = ee.FeatureCollection(legger_id)
+
+    class_property = "Legger"
+
+    legger = legger \
+        .filter(ee.Filter.neq(class_property, '')) \
+        .map(lambda f: f.set(class_property, ee.Number.parse(f.get(class_property)))) \
+        .remap([8, 9, 1, 2, 3, 4], [1, 2, 3, 4, 5, 6], class_property)
+
+    legger_image = ee.Image().int().paint(legger, class_property) \
+        .rename(class_property)
+
+    # get an image given region and dates
+    images = get_satellite_images(region, date_begin, date_end) \
+        .map(lambda i: i.resample('bilinear'))
+
+    image = ee.Image(images.mosaic()).divide(10000)
+
+    # add AHN for classification
+    ahn = ee.Image('AHN/AHN2_05M_RUW')
+
+    # sample values using stratified sampling
+    number_of_points = 500
+    options = {
+        'numPoints': number_of_points,
+        'classBand': class_property,
+        'region': region,
+        'scale': 10,
+        'tileScale': 8,
+        'dropNulls': True
+    }
+
+    samples = image \
+        .addBands(legger_image) \
+        .addBands(ahn.divide(100)) \
+        .stratifiedSample(**options)
+
+    # train random forest classifier
+    number_of_trees = 15
+
+    classifier = ee.Classifier.randomForest(number_of_trees) \
+        .train(samples, class_property, image.bandNames())
+
+    # classify current image
+    classified = image.classify(classifier)
+
+    classified = classified \
+        .updateMask(legger_image.mask()) \
+        .clip(region)
+
+    return classified \
+        .focal_mode(1)
+
+
+def _get_landuse_old(region, date_begin, date_end):
     training_asset_id = 'users/gertjang/trainingsetWaal25012018_UTM'
     validation_asset_id = 'users/gertjang/validationsetWaal25012018_UTM'
     training_image_id = 'COPERNICUS/S2/20170526T105031_20170526T105518_T31UFT'

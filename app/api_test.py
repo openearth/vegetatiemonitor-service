@@ -130,41 +130,21 @@ def test_get_zonal_info_landuse(client):
 
     output = sorted(json.loads(s))
 
-    output_expected = '''[
-        {
-            "id": 1,
-            "area_per_type": [
-              {
-                "area": 133988.3464499081,
-                "type": "0"
-              },
-              {
-                "area": 1406658.7865559896,
-                "type": "1"
-              },
-              {
-                "area": 801080.4081954657,
-                "type": "2"
-              },
-              {
-                "area": 2543533.6747740502,
-                "type": "3"
-              },
-              {
-                "area": 404511.24248046876,
-                "type": "4"
-              },
-              {
-                "area": 518283.17333984375,
-                "type": "5"
-              },
-              {
-                "area": 141902.51318359375,
-                "type": "6"
-              }
-            ]
-        }
-    ]'''
+    print(output)
+
+    output_expected = '''[{
+        "id": 1,
+        "area_per_type": [
+            {"area": 1751665.8099475338, "type": "1"},
+            {"area": 956930.1705805759, "type": "2"},
+            {"area": 1502966.2117359836, "type": "3"},
+            {"area": 1349449.4360236675, "type": "4"},
+            {"area": 1149038.0933900122, "type": "8"},
+            {"area": 5964592.139388022, "type": "9"},
+            {"area": 829810.1814893535, "type": "10"}
+        ] 
+    }]
+    '''
 
     output_expected = sorted(json.loads(output_expected))
 
@@ -226,10 +206,12 @@ def test_export_landuse(client):
 
     output = json.loads(r.get_data(as_text=True))
 
-    open('test_output_export_landuse.json', 'w').write(r.get_data(as_text=True))
+    open('test_output_export_landuse.json', 'w').write(
+        r.get_data(as_text=True))
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
+
 
 def test_export_ndvi(client):
     input = '''{
@@ -260,6 +242,7 @@ def test_export_ndvi(client):
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
 
+
 def test_export_landuse_vs_legger(client):
     input = '''{
        "dateBegin": "2016-07-20",
@@ -284,10 +267,12 @@ def test_export_landuse_vs_legger(client):
 
     output = json.loads(r.get_data(as_text=True))
 
-    open('test_output_export_landuse_vs_legger.json', 'w').write(r.get_data(as_text=True))
+    open('test_output_export_landuse_vs_legger.json', 'w').write(
+        r.get_data(as_text=True))
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
+
 
 def test_export_satellite_image(client):
     input = '''{
@@ -318,7 +303,8 @@ def test_export_satellite_image(client):
 
     output = json.loads(r.get_data(as_text=True))
 
-    open('test_output_export_satellite.json', 'w').write(r.get_data(as_text=True))
+    open('test_output_export_satellite.json', 'w').write(
+        r.get_data(as_text=True))
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
