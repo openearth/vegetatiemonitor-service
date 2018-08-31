@@ -162,8 +162,8 @@ def _get_landuse(region, date_begin, date_end):
     class_property = "Legger"
 
     legger = legger \
-        .filter(ee.Filter.neq(class_property, '')) \
-        .map(lambda f: f.set(class_property, ee.Number.parse(f.get(class_property)))) \
+        .filter(ee.Filter.neq(class_property, None)) \
+        .map(lambda f: f.set(class_property, ee.Number(f.get(class_property)))) \
         .remap([8, 9, 1, 2, 3, 4], [1, 2, 3, 4, 5, 6], class_property)
 
     legger_image = ee.Image().int().paint(legger, class_property) \
