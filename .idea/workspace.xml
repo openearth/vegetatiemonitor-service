@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
+<<<<<<< HEAD
     <list default="true" id="b208ddd4-ddf1-4df1-aa86-56ad2c84abf1" name="Default" comment="fix build, it looks like asset was re-upoaded with a field type &quot;Legger&quot; changed from string to integer." />
+=======
+    <list default="true" id="b208ddd4-ddf1-4df1-aa86-56ad2c84abf1" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api.py" afterDir="false" />
+    </list>
+>>>>>>> 9c36fc5f48e83fb6f474b4649224e9754db86d6d
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,14 +40,22 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
+<<<<<<< HEAD
           <entry key="py" value="81" />
           <entry key="txt" value="136" />
+=======
+          <entry key="py" value="78" />
+>>>>>>> 9c36fc5f48e83fb6f474b4649224e9754db86d6d
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
+<<<<<<< HEAD
           <entry key="PLAIN_TEXT" value="136" />
           <entry key="Python" value="81" />
+=======
+          <entry key="Python" value="78" />
+>>>>>>> 9c36fc5f48e83fb6f474b4649224e9754db86d6d
         </counts>
       </usages-collector>
     </session>
@@ -50,8 +65,13 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/api.py">
           <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
             <state relative-caret-position="168">
               <caret line="157" column="17" selection-start-line="157" selection-start-column="17" selection-end-line="157" selection-end-column="64" />
+=======
+            <state relative-caret-position="304">
+              <caret line="165" column="54" selection-start-line="165" selection-start-column="54" selection-end-line="165" selection-end-column="54" />
+>>>>>>> 9c36fc5f48e83fb6f474b4649224e9754db86d6d
             </state>
           </provider>
         </entry>
@@ -59,8 +79,13 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/api_test.py">
           <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
             <state relative-caret-position="153">
               <caret line="148" column="43" lean-forward="true" selection-start-line="148" selection-start-column="43" selection-end-line="148" selection-end-column="43" />
+=======
+            <state relative-caret-position="170">
+              <caret line="10" column="17" lean-forward="true" selection-start-line="10" selection-start-column="17" selection-end-line="10" selection-end-column="17" />
+>>>>>>> 9c36fc5f48e83fb6f474b4649224e9754db86d6d
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -137,6 +162,10 @@
         <option value="$PROJECT_DIR$/app/main.py" />
         <option value="$PROJECT_DIR$/.travis.yml" />
         <option value="$PROJECT_DIR$/app/api.yaml" />
+<<<<<<< HEAD
+=======
+        <option value="$PROJECT_DIR$/app/api_test.py" />
+>>>>>>> 9c36fc5f48e83fb6f474b4649224e9754db86d6d
         <option value="$PROJECT_DIR$/app/api.py" />
         <option value="$PROJECT_DIR$/app/api_test.py" />
       </list>
@@ -437,6 +466,7 @@
       <option name="project" value="LOCAL" />
       <updated>1534267961703</updated>
     </task>
+<<<<<<< HEAD
     <task id="LOCAL-00016" summary="fix build, it looks like asset was re-upoaded with a field type &quot;Legger&quot; changed from string to integer.">
       <created>1535702907845</created>
       <option name="number" value="00016" />
@@ -448,6 +478,18 @@
     <servers />
   </component>
   <component name="TestHistory">
+=======
+    <option name="localTasksCounter" value="16" />
+    <servers />
+  </component>
+  <component name="TestHistory">
+    <history-entry file="tests - 2018.06.01 at 16h 14m 20s.xml">
+      <configuration name="tests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="tests - 2018.06.01 at 16h 15m 53s.xml">
+      <configuration name="tests" configurationId="tests" />
+    </history-entry>
+>>>>>>> 9c36fc5f48e83fb6f474b4649224e9754db86d6d
     <history-entry file="tests - 2018.06.01 at 16h 16m 14s.xml">
       <configuration name="tests" configurationId="tests" />
     </history-entry>
@@ -472,12 +514,15 @@
     <history-entry file="tests - 2018.08.31 at 10h 03m 39s.xml">
       <configuration name="tests" configurationId="tests" />
     </history-entry>
+<<<<<<< HEAD
     <history-entry file="tests - 2018.08.31 at 10h 05m 36s.xml">
       <configuration name="tests" configurationId="tests" />
     </history-entry>
     <history-entry file="tests - 2018.08.31 at 10h 07m 19s.xml">
       <configuration name="tests" configurationId="tests" />
     </history-entry>
+=======
+>>>>>>> 9c36fc5f48e83fb6f474b4649224e9754db86d6d
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="6" />
@@ -539,8 +584,12 @@
     <MESSAGE value="exporting images" />
     <MESSAGE value=" export images" />
     <MESSAGE value="improve classification, use on-the-fly stratified sampling combined with random forest." />
+<<<<<<< HEAD
     <MESSAGE value="fix build, it looks like asset was re-upoaded with a field type &quot;Legger&quot; changed from string to integer." />
     <option name="LAST_COMMIT_MESSAGE" value="fix build, it looks like asset was re-upoaded with a field type &quot;Legger&quot; changed from string to integer." />
+=======
+    <option name="LAST_COMMIT_MESSAGE" value="improve classification, use on-the-fly stratified sampling combined with random forest." />
+>>>>>>> 9c36fc5f48e83fb6f474b4649224e9754db86d6d
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -601,8 +650,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/api_test.py">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
         <state relative-caret-position="153">
           <caret line="148" column="43" lean-forward="true" selection-start-line="148" selection-start-column="43" selection-end-line="148" selection-end-column="43" />
+=======
+        <state relative-caret-position="170">
+          <caret line="10" column="17" lean-forward="true" selection-start-line="10" selection-start-column="17" selection-end-line="10" selection-end-column="17" />
+>>>>>>> 9c36fc5f48e83fb6f474b4649224e9754db86d6d
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
@@ -611,8 +665,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/api.py">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
         <state relative-caret-position="168">
           <caret line="157" column="17" selection-start-line="157" selection-start-column="17" selection-end-line="157" selection-end-column="64" />
+=======
+        <state relative-caret-position="304">
+          <caret line="165" column="54" selection-start-line="165" selection-start-column="54" selection-end-line="165" selection-end-column="54" />
+>>>>>>> 9c36fc5f48e83fb6f474b4649224e9754db86d6d
         </state>
       </provider>
     </entry>
