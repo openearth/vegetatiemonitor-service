@@ -15,8 +15,6 @@ def initialize_google_earth_engine():
         print('Writing privatekey.json from environmental variable ...')
         content = base64.b64decode(os.environ['key']).decode('ascii')
 
-        print(content)
-
         with open(EE_PRIVATE_KEY_FILE, 'w') as f:
             f.write(content)
 

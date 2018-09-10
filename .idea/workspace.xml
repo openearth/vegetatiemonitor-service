@@ -1,68 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b208ddd4-ddf1-4df1-aa86-56ad2c84abf1" name="Default" comment="" />
+    <list default="true" id="b208ddd4-ddf1-4df1-aa86-56ad2c84abf1" name="Default" comment="fix build, it looks like asset was re-upoaded with a field type &quot;Legger&quot; changed from string to integer." />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
-    <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/vegetatiemonitor_service$tests.coverage" NAME="tests Coverage Results" MODIFIED="1535702825554" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/vegetatiemonitor_service$py_test_for_api_test_test_export_landuse.coverage" NAME="py.test for api_test.test_export_landuse Coverage Results" MODIFIED="1527862272465" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/vegetatiemonitor_service$api_test.coverage" NAME="api_test Coverage Results" MODIFIED="1535702545674" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app" />
+  </component>
+  <component name="FUSProjectUsageTrigger">
+    <session id="-1625619246">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.open.time.1" value="1" />
+          <entry key="project.opened" value="1" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.open">
+        <counts>
+          <entry key="py" value="1" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.open">
+        <counts>
+          <entry key="Python" value="1" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.edit">
+        <counts>
+          <entry key="py" value="81" />
+          <entry key="txt" value="136" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="PLAIN_TEXT" value="136" />
+          <entry key="Python" value="81" />
+        </counts>
+      </usages-collector>
+    </session>
+  </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/main.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="408">
-              <caret line="17" column="19" lean-forward="true" selection-start-line="17" selection-start-column="19" selection-end-line="17" selection-end-column="19" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="api.py" pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/api.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="287">
-              <caret line="468" column="18" lean-forward="false" selection-start-line="468" selection-start-column="18" selection-end-line="468" selection-end-column="18" />
-              <folding>
-                <element signature="e#0#51#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="168">
+              <caret line="157" column="17" selection-start-line="157" selection-start-column="17" selection-end-line="157" selection-end-column="64" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="error_handler.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/error_handler.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="96">
-              <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
-              <folding>
-                <element signature="e#34#70#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="api_test.py" pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/api_test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="260">
-              <caret line="13" column="0" lean-forward="false" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+            <state relative-caret-position="153">
+              <caret line="148" column="43" lean-forward="true" selection-start-line="148" selection-start-column="43" selection-end-line="148" selection-end-column="43" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="api.yaml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/api.yaml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="370">
-              <caret line="21" column="22" lean-forward="false" selection-start-line="21" selection-start-column="22" selection-end-line="21" selection-end-column="22" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -78,20 +79,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>imageBan</find>
-      <find>bqnds</find>
-      <find>ndv</find>
-      <find>bands</find>
-      <find>get_tim</find>
-      <find>to_date_time_string</find>
-      <find>vis&quot;:</find>
-      <find>body</find>
-      <find>vis</find>
-      <find>_get</find>
-      <find>map</find>
-      <find>users/ge</find>
-      <find>focal</find>
-      <find>MapFil</find>
       <find>flass</find>
       <find>swagg</find>
       <find>client</find>
@@ -105,9 +92,23 @@
       <find>legger_c</find>
       <find>rais</find>
       <find>group</find>
-      <find>'</find>
       <find>classification vs</find>
       <find>automatical</find>
+      <find>map</find>
+      <find>get_map_i</find>
+      <find>sentin</find>
+      <find>sentine</find>
+      <find>getM</find>
+      <find>bounds_asset_id</find>
+      <find>bounds</find>
+      <find>band_names</find>
+      <find>classes</find>
+      <find>class</find>
+      <find>get</find>
+      <find>classP</find>
+      <find>numPo</find>
+      <find>tru</find>
+      <find>'</find>
     </findStrings>
     <replaceStrings>
       <replace>date_begin</replace>
@@ -119,7 +120,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Add-ndvi-image-to-GEE-service" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
   </component>
@@ -132,11 +133,12 @@
         <option value="$PROJECT_DIR$/app/app.py" />
         <option value="$PROJECT_DIR$/app/errors.py" />
         <option value="$PROJECT_DIR$/app/test/test_api.py" />
-        <option value="$PROJECT_DIR$/app/api.yaml" />
         <option value="$PROJECT_DIR$/app/error_handler.py" />
         <option value="$PROJECT_DIR$/app/main.py" />
-        <option value="$PROJECT_DIR$/app/api_test.py" />
+        <option value="$PROJECT_DIR$/.travis.yml" />
+        <option value="$PROJECT_DIR$/app/api.yaml" />
         <option value="$PROJECT_DIR$/app/api.py" />
+        <option value="$PROJECT_DIR$/app/api_test.py" />
       </list>
     </option>
   </component>
@@ -147,8 +149,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6" fullScreen="true">
-    <option name="width" value="1920" />
-    <option name="height" value="1080" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1096" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -179,21 +183,10 @@
     </entry>
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
-      <flattenPackages />
-      <showMembers />
-      <showModules />
-      <showLibraryContents />
-      <hideEmptyPackages />
-      <abbreviatePackageNames />
-      <autoscrollToSource />
-      <autoscrollFromSource />
-      <sortByType />
-      <manualOrder />
+    <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -210,15 +203,15 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
-    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file://D:/src/GitHub/vegetatiemonitor-service/app/api_test.py" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file://D:/src/GitHub/vegetatiemonitor-service/app/api_test.py" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -245,8 +238,88 @@
       </list>
     </option>
   </component>
-  <component name="ShelveChangesManager" show_recycled="false">
-    <option name="remove_strategy" value="false" />
+  <component name="RunManager" selected="Python tests.tests">
+    <configuration name="api_test" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="vegetatiemonitor-service" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\ProgramData\Anaconda3\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/api_test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="py.test">
+      <module name="vegetatiemonitor-service" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="C:\Program Files\Anaconda3\python.exe" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/app/api_test.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="py.test for api_test.test_export_landuse" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="vegetatiemonitor-service" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="C:\Program Files\Anaconda3\python.exe" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;api_test.test_export_landuse&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="tests" type="tests" factoryName="py.test">
+      <module name="vegetatiemonitor-service" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="C:\ProgramData\Anaconda3\python.exe" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/app/api_test.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python tests.tests" />
+      <item itemvalue="Python.api_test" />
+      <item itemvalue="Python tests.py.test for api_test.test_export_landuse" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.api_test" />
+        <item itemvalue="Python tests.py.test for api_test.test_export_landuse" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -350,35 +423,89 @@
       <option name="project" value="LOCAL" />
       <updated>1522279883312</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary=" export images">
+      <created>1527863207872</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1527863207872</updated>
+    </task>
+    <task id="LOCAL-00015" summary="improve classification, use on-the-fly stratified sampling combined with random forest.">
+      <created>1534267961703</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1534267961703</updated>
+    </task>
+    <task id="LOCAL-00016" summary="fix build, it looks like asset was re-upoaded with a field type &quot;Legger&quot; changed from string to integer.">
+      <created>1535702907845</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1535702907845</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
+  </component>
+  <component name="TestHistory">
+    <history-entry file="tests - 2018.06.01 at 16h 16m 14s.xml">
+      <configuration name="tests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="tests - 2018.06.01 at 16h 16m 45s.xml">
+      <configuration name="tests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="tests - 2018.06.01 at 16h 19m 11s.xml">
+      <configuration name="tests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="tests - 2018.06.01 at 16h 20m 28s.xml">
+      <configuration name="tests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="tests - 2018.08.31 at 09h 50m 58s.xml">
+      <configuration name="tests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="tests - 2018.08.31 at 09h 51m 27s.xml">
+      <configuration name="tests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="tests - 2018.08.31 at 10h 02m 55s.xml">
+      <configuration name="tests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="tests - 2018.08.31 at 10h 03m 39s.xml">
+      <configuration name="tests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="tests - 2018.08.31 at 10h 05m 36s.xml">
+      <configuration name="tests" configurationId="tests" />
+    </history-entry>
+    <history-entry file="tests - 2018.08.31 at 10h 07m 19s.xml">
+      <configuration name="tests" configurationId="tests" />
+    </history-entry>
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32960325" sideWeight="0.5021322" order="12" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3511206" sideWeight="0.4936034" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.11698881" sideWeight="0.57196164" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31483456" sideWeight="0.56023455" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.122068234" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32960325" sideWeight="0.4978678" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="SciView" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Documentation" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32995737" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" x="0" y="0" width="434" height="896" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2260128" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.4978678" weight="0.32960325" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.63272923" visible="true" weight="0.40812182" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49200428" weight="0.22426096" />
+      <window_info anchor="bottom" id="Python Console" order="8" sideWeight="0.57196164" weight="0.11698881" />
+      <window_info anchor="bottom" id="Terminal" order="9" sideWeight="0.56023455" weight="0.31483456" />
+      <window_info anchor="bottom" id="Messages" order="10" />
+      <window_info anchor="bottom" id="Docker" order="11" />
+      <window_info anchor="bottom" id="Event Log" order="12" sideWeight="0.5079957" side_tool="true" weight="0.22459893" />
+      <window_info anchor="bottom" id="Database Changes" order="13" show_stripe_button="false" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" x="0" y="0" width="434" height="896" id="Documentation" order="3" weight="0.32995737" />
+      <window_info anchor="right" id="SciView" order="4" />
+      <window_info anchor="right" id="Database" order="5" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -409,7 +536,11 @@
     <MESSAGE value="* add default vis&#10;* set endDate if empty" />
     <MESSAGE value="* implement querying zonal statistics for legger classes per region&#10;* added unit test for zonal statistics&#10;* small refactoring" />
     <MESSAGE value="* current path struggles" />
-    <option name="LAST_COMMIT_MESSAGE" value="* current path struggles" />
+    <MESSAGE value="exporting images" />
+    <MESSAGE value=" export images" />
+    <MESSAGE value="improve classification, use on-the-fly stratified sampling combined with random forest." />
+    <MESSAGE value="fix build, it looks like asset was re-upoaded with a field type &quot;Legger&quot; changed from string to integer." />
+    <option name="LAST_COMMIT_MESSAGE" value="fix build, it looks like asset was re-upoaded with a field type &quot;Legger&quot; changed from string to integer." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -419,185 +550,59 @@
           <line>1</line>
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="1" />
     </breakpoint-manager>
-    <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/api.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1020">
-          <caret line="60" column="13" lean-forward="true" selection-start-line="60" selection-start-column="13" selection-end-line="60" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/api.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2924">
-          <caret line="182" column="39" lean-forward="false" selection-start-line="182" selection-start-column="39" selection-end-line="182" selection-end-column="39" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/api.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1020">
-          <caret line="60" column="25" lean-forward="false" selection-start-line="60" selection-start-column="25" selection-end-line="60" selection-end-column="25" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/api.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1802">
-          <caret line="116" column="41" lean-forward="true" selection-start-line="116" selection-start-column="41" selection-end-line="116" selection-end-column="41" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/api.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1564">
-          <caret line="102" column="0" lean-forward="false" selection-start-line="102" selection-start-column="0" selection-end-line="102" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/api.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="816">
-          <caret line="48" column="27" lean-forward="true" selection-start-line="48" selection-start-column="27" selection-end-line="48" selection-end-column="27" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/api.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="2" column="0" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/api.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/map.py" />
     <entry file="file://$PROJECT_DIR$/app2/maps.py" />
     <entry file="file://$PROJECT_DIR$/app/main_test.py" />
-    <entry file="file://$PROJECT_DIR$/app/api.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/config.py" />
     <entry file="file://$PROJECT_DIR$/app/gee.py" />
     <entry file="file://$PROJECT_DIR$/app/app.py" />
     <entry file="file://$PROJECT_DIR$/app/app.yaml">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://C:/Program Files/Anaconda3/Lib/site-packages/flask/app.py" />
+    <entry file="file://C:/Program Files/Anaconda3/Lib/site-packages/flask/blueprints.py" />
+    <entry file="file://$PROJECT_DIR$/.travis.yml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="85">
+          <caret line="5" selection-start-line="5" selection-end-line="5" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/api.yaml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="370">
-          <caret line="21" column="22" lean-forward="false" selection-start-line="21" selection-start-column="22" selection-end-line="21" selection-end-column="22" />
-          <folding />
+        <state relative-caret-position="374">
+          <caret line="205" column="49" lean-forward="true" selection-start-line="205" selection-start-column="49" selection-end-line="205" selection-end-column="49" />
         </state>
       </provider>
     </entry>
-    <entry file="file://C:/Program Files/Anaconda3/Lib/site-packages/flask/app.py">
+    <entry file="file://$PROJECT_DIR$/app/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="451">
-          <caret line="1096" column="20" lean-forward="true" selection-start-line="1096" selection-start-column="20" selection-end-line="1096" selection-end-column="20" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Program Files/Anaconda3/Lib/site-packages/flask/blueprints.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="344">
-          <caret line="91" column="8" lean-forward="false" selection-start-line="91" selection-start-column="8" selection-end-line="91" selection-end-column="8" />
-          <folding />
+        <state relative-caret-position="-40">
+          <caret line="8" column="4" selection-start-line="8" selection-start-column="4" selection-end-line="8" selection-end-column="4" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/error_handler.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="96">
-          <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+        <state relative-caret-position="255">
+          <caret line="4" selection-start-line="4" selection-end-line="4" />
+          <caret line="15" column="27" lean-forward="true" selection-start-line="15" selection-start-column="27" selection-end-line="15" selection-end-column="27" />
           <folding>
             <element signature="e#34#70#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
-          <caret line="17" column="19" lean-forward="true" selection-start-line="17" selection-start-column="19" selection-end-line="17" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
+    <entry file="file://$PROJECT_DIR$/app/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/app/api_test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="260">
-          <caret line="13" column="0" lean-forward="false" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+        <state relative-caret-position="153">
+          <caret line="148" column="43" lean-forward="true" selection-start-line="148" selection-start-column="43" selection-end-line="148" selection-end-column="43" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
@@ -606,11 +611,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/api.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="287">
-          <caret line="468" column="18" lean-forward="false" selection-start-line="468" selection-start-column="18" selection-end-line="468" selection-end-column="18" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="168">
+          <caret line="157" column="17" selection-start-line="157" selection-start-column="17" selection-end-line="157" selection-end-column="64" />
         </state>
       </provider>
     </entry>
