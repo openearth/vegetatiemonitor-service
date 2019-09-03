@@ -3,6 +3,7 @@ from flask import Flask, jsonify, redirect, request
 import flask_cors
 from flasgger import Swagger
 import ee
+from datetime import datetime, timedelta
 
 import error_handler
 
@@ -561,8 +562,11 @@ def get_map_times(id):
 
     region = json['region']
 
-    date_begin = json['dateBegin']
-    date_end = json['dateEnd']
+    date_end = datetime.today()
+    date_begin = date_end - timedelta(days=365)
+
+    # date_begin = json['dateBegin']
+    # date_end = json['dateEnd']
 
     date_begin = date_begin or ee.Date(date_begin)
     date_end = date_end or ee.Date(date_end)
@@ -573,7 +577,15 @@ def get_map_times(id):
         .map(to_date_time_string).getInfo()
     image_ids = images.aggregate_array('system:id').getInfo()
 
-    return jsonify({'image_times': image_times, 'image_ids': image_ids})
+    image_info_list = []
+    for time, id in zip(image_times, image_ids):
+        image_info_list.append({
+            "datetime": time,
+            "datetimeFormat": 'YYYY-MM-dd HH:mm',
+            "imageId": id
+        })
+
+    return jsonify(image_info_list)
 
 
 @app.route('/image/', methods=['POST'])
