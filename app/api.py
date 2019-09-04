@@ -575,14 +575,14 @@ def get_map_times(id):
 
     image_times = ee.List(images.aggregate_array('system:time_start')) \
         .map(to_date_time_string).getInfo()
-    image_ids = images.aggregate_array('system:id').getInfo()
+    image_times = map(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M'), image_times)
+    image_dates = list(sorted(set(map(lambda x: x.strftime('%Y-%m-%d'), image_times))))
 
     image_info_list = []
-    for time, id in zip(image_times, image_ids):
+    for time in image_dates:
         image_info_list.append({
-            "datetime": time,
-            "datetimeFormat": 'YYYY-MM-DD HH:mm',
-            "imageId": id,
+            "date": time,
+            "dateFormat": 'YYYY-MM-DD',
             "type": "instance"
         })
 
