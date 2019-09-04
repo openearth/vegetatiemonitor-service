@@ -582,7 +582,8 @@ def get_map_times(id):
         image_info_list.append({
             "datetime": time,
             "datetimeFormat": 'YYYY-MM-DD HH:mm',
-            "imageId": id
+            "imageId": id,
+            "type": "instance"
         })
 
     return jsonify(image_info_list)
