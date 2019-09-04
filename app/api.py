@@ -581,7 +581,7 @@ def get_map_times(id):
     for time, id in zip(image_times, image_ids):
         image_info_list.append({
             "datetime": time,
-            "datetimeFormat": 'YYYY-MM-dd HH:mm',
+            "datetimeFormat": 'YYYY-MM-DD HH:mm',
             "imageId": id
         })
 
