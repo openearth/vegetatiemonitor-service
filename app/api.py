@@ -76,6 +76,17 @@ def get_satellite_images(region, date_begin, date_end):
 
     return images
 
+def get_image_collection(collection, region, date_begin, date_end):
+    images = ee.ImageCollection(collection) \
+        .filterBounds(region)
+
+    if date_begin:
+        if not date_end:
+            date_end = date_begin.advance(1, 'day')
+
+        images = images.filterDate(date_begin, date_end)
+
+    return images
 
 def add_vis_parameter(vis, param, value):
     """
@@ -547,23 +558,62 @@ def get_map_zonal_info(id):
 
     return jsonify(info)
 
+modes = ['daily', 'yearly']
 
-@app.route('/map/<string:id>/times/', methods=['POST'])
+maps_modes = {
+    'satellite':{
+        'daily': get_satellite_images,
+        'yearly': get_image_collection
+    },
+    'ndvi':{
+        'daily': get_satellite_images,
+        'yearly': get_image_collection
+    },
+    'landuse': {
+        'daily': '',
+        'yearly': get_image_collection
+    },
+    'landuse-vs-legger': {
+        'daily': '',
+        'yearly': ''
+    },
+    'legger': {
+        'daily': '',
+        'yearly': get_image_collection
+    }
+}
+
+yearly_collections = {
+    'satellite': '',
+    'ndvi': '',
+    'landuse': 'users/rogersckw9/vegetatiemonitor/yearly-classified-images',
+    'landuse-vs-legger': '',
+    'legger': 'users/rogersckw9/ecotoop/ecotoop-maps-6-class'
+}
+
+
+@app.route('/map/<string:id>/times/<string:mode>', methods=['POST'])
 @flask_cors.cross_origin()
-def get_map_times(id):
+def get_map_times(id, mode):
     """
     Returns maps processed by Google Earth Engine
     """
 
-    if id != 'satellite':
-        return 'Error: times can be requested only for satellite images'
+    if not maps_modes[id][mode] or not yearly_collections[id]:
+        return 'Error: functionality for {0} {1} not implemented'.format(mode, id)
 
     json = request.get_json()
 
     region = json['region']
 
-    date_end = datetime.today()
-    date_begin = date_end - timedelta(days=365)
+    if mode == 'daily':
+        date_end = datetime.today()
+        date_begin = date_end - timedelta(days=365)
+    elif mode == 'yearly':
+        date_begin = datetime(2000, 1, 1, 0, 0, 0)
+        date_end = datetime(2019, 1, 1, 0, 0, 0)
+    else:
+        return 'Error: only daily and yearly modes can be requested'
 
     # date_begin = json['dateBegin']
     # date_end = json['dateEnd']
@@ -571,20 +621,37 @@ def get_map_times(id):
     date_begin = date_begin or ee.Date(date_begin)
     date_end = date_end or ee.Date(date_end)
 
-    images = get_satellite_images(region, date_begin, date_end)
+    if mode == 'daily':
+        images = maps_modes[id][mode](region, date_begin, date_end)
+        image_times = ee.List(images.aggregate_array('system:time_start')) \
+            .map(to_date_time_string).getInfo()
+        image_times = map(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M'), image_times)
+        image_dates = list(sorted(set(map(lambda x: x.strftime('%Y-%m-%d'), image_times))))
 
-    image_times = ee.List(images.aggregate_array('system:time_start')) \
-        .map(to_date_time_string).getInfo()
-    image_times = map(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M'), image_times)
-    image_dates = list(sorted(set(map(lambda x: x.strftime('%Y-%m-%d'), image_times))))
-
-    image_info_list = []
-    for time in image_dates:
-        image_info_list.append({
-            "date": time,
-            "dateFormat": 'YYYY-MM-DD',
-            "type": "instance"
-        })
+        image_info_list = []
+        for time in image_dates:
+            image_info_list.append({
+                "date": time,
+                "dateFormat": 'YYYY-MM-DD',
+                "type": "instance"
+            })
+    elif mode == 'yearly':
+        images = maps_modes[id][mode](yearly_collections[id], region, date_begin, date_end)
+        image_times = ee.List(images.aggregate_array('system:time_start')) \
+            .map(to_date_time_string).getInfo()
+        image_times = map(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M'), image_times)
+        image_start_dates = list(map(lambda t: datetime(t.year, 1, 1), image_times))
+        image_end_dates = list(map(lambda t: datetime(t.year+1, 1, 1), image_start_dates))
+        image_info_list = []
+        for start, end in zip(image_start_dates, image_end_dates):
+            image_info_list.append({
+                "date_start": start.strftime('%Y-%m-%d'),
+                "date_end": end.strftime('%Y-%m-%d'),
+                "dateFormat": 'YYYY-MM-DD',
+                "type": "interval"
+            })
+    else:
+        return 'Error: only daily and yearly modes can be requested'
 
     return jsonify(image_info_list)
 
