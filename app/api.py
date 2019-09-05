@@ -599,17 +599,18 @@ def get_map_times(id, mode):
     Returns maps processed by Google Earth Engine
     """
 
-    if not maps_modes[id][mode] or not yearly_collections[id]:
-        return 'Error: functionality for {0} {1} not implemented'.format(mode, id)
-
     json = request.get_json()
 
     region = json['region']
 
     if mode == 'daily':
+        if not maps_modes[id][mode]:
+            return 'Error: functionality for {0} {1} not implemented'.format(mode, id)
         date_end = datetime.today()
         date_begin = date_end - timedelta(days=365)
     elif mode == 'yearly':
+        if not maps_modes[id][mode] and not yearly_collections[id]:
+            return 'Error: functionality for {0} {1} not implemented'.format(mode, id)
         date_begin = datetime(2000, 1, 1, 0, 0, 0)
         date_end = datetime(2019, 1, 1, 0, 0, 0)
     else:
