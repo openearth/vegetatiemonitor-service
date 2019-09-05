@@ -63,7 +63,7 @@ def to_date_time_string(millis):
     return ee.Date(millis).format('YYYY-MM-dd HH:mm')
 
 
-def get_satellite_images(region, date_begin, date_end):
+def get_satellite_images(region, date_begin, date_end, cloud_filtering):
     images = ee.ImageCollection('COPERNICUS/S2') \
         .select(band_names['s2'], band_names['readable']) \
         .filterBounds(region)
@@ -76,7 +76,8 @@ def get_satellite_images(region, date_begin, date_end):
     filter_options = {
         'score_percentile': 95
     }
-    images = get_mostly_clean_images(images, region, options=filter_options)
+    if cloud_filtering:
+        images = get_mostly_clean_images(images, region, options=filter_options)
 
     return images
 
@@ -125,19 +126,17 @@ def get_mostly_clean_images(images, g, options=None):
         if 'cloud_frequency_threshold_delta' in options:
             cloud_frequency_threshold_delta = options['cloud_frequency_threshold_delta']
 
-    modis_clouds = ee.Image('users/gena/MODCF_meanannual')
-    cloud_frequency = modis_clouds.divide(10000).reduceRegion(
-        ee.Reducer.percentile([score_percentile]),
-        geometry.buffer(10000, scale*10), scale*10).values().get(0)
-    # print(cloud_frequency)
+    # modis_clouds = ee.Image('users/gena/MODCF_meanannual')
+    cloud_frequency = 0.74 # Calculated for the Netherlands, hardcoded for speed
+    # cloud_frequency = modis_clouds.divide(10000).reduceRegion(
+    #     ee.Reducer.percentile([score_percentile]),
+    #     geometry.buffer(10000, scale*10), scale*10).values().get(0)
 
     cloud_frequency = ee.Number(cloud_frequency).subtract(0.15).max(0.0)
     if cloud_frequency_threshold_delta:
         cloud_frequency = cloud_frequency.add(cloud_frequency_threshold_delta)
 
     images = images.filterBounds(geometry)
-
-    # size = images.size()
 
     images = add_quality_score(images, geometry, score_percentile, scale)
 
@@ -176,7 +175,7 @@ def visualize_image(image, vis):
 
 
 def get_satellite_image(region, date_begin, date_end, vis):
-    images = get_satellite_images(region, date_begin, date_end)
+    images = get_satellite_images(region, date_begin, date_end, False)
 
     image = ee.Image(images.mosaic()).divide(10000)
 
@@ -186,7 +185,7 @@ def get_satellite_image(region, date_begin, date_end, vis):
 
 
 def _get_ndvi(date_begin, date_end, region):
-    images = get_satellite_images(region, date_begin, date_end) \
+    images = get_satellite_images(region, date_begin, date_end, False) \
         .map(lambda i: i.resample('bilinear'))
     image = ee.Image(images.mosaic()).divide(10000)
     ndvi = image.normalizedDifference(['nir', 'red'])
@@ -225,7 +224,8 @@ def _get_landuse(region, date_begin, date_end):
     :return:
     """
 
-    legger_id = 'users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017'
+    # legger_id = 'users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017'
+    legger_id = 'users/gertjang/FI_Rijn_Maas_merged_2012_numfdls'
 
     legger = ee.FeatureCollection(legger_id)
 
@@ -240,7 +240,7 @@ def _get_landuse(region, date_begin, date_end):
         .rename(class_property)
 
     # get an image given region and dates
-    images = get_satellite_images(region, date_begin, date_end) \
+    images = get_satellite_images(region, date_begin, date_end, False) \
         .map(lambda i: i.resample('bilinear'))
 
     image = ee.Image(images.mosaic()).divide(10000)
@@ -291,7 +291,7 @@ def _get_landuse_old(region, date_begin, date_end):
     bounds = ee.FeatureCollection(bounds_asset_id)
 
     # get an image given region and dates
-    images = get_satellite_images(region, date_begin, date_end) \
+    images = get_satellite_images(region, date_begin, date_end, False) \
         .map(lambda i: i.resample('bilinear'))
 
     image = ee.Image(images.mosaic()).divide(10000)
@@ -373,17 +373,23 @@ def get_landuse_vs_legger(region, date_begin, date_end, vis):
 
 
 def _get_legger_image():
-    legger_features = ee.FeatureCollection('users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017')
+    # legger_features = ee.FeatureCollection('users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017')
 
-    class_property = "Legger"
+    # class_property = "Legger"
+    #
+    # legger = legger_features \
+    #     .filter(ee.Filter.neq(class_property, None)) \
+    #     .map(lambda f: f.set(class_property, ee.Number(f.get(class_property)))) \
+    #     .remap([8, 9, 10, 1, 2, 3, 4], [1, 2, 2, 3, 4, 5, 6], class_property)
+    #
+    # legger = ee.Image().int().paint(legger, class_property) \
+    #     .rename(class_property)
+    legger_features = ee.FeatureCollection('users/gena/vegetatie-vlakken-geo')
 
-    legger = legger_features \
-        .filter(ee.Filter.neq(class_property, None)) \
-        .map(lambda f: f.set(class_property, ee.Number(f.get(class_property)))) \
-        .remap([8, 9, 10, 1, 2, 3, 4], [1, 2, 2, 3, 4, 5, 6], class_property)
+    legger_features = legger_features \
+        .map(lambda f: f.set('type', legger_classes.get(f.get('VL_KLASSE'))))
 
-    legger = ee.Image().int().paint(legger, class_property) \
-        .rename(class_property)
+    legger = ee.Image().int().paint(legger_features, 'type')
 
     return legger
 
@@ -647,10 +653,10 @@ maps_modes = {
 }
 
 yearly_collections = {
-    'satellite': '',
-    'ndvi': '',
+    'satellite': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
+    'ndvi': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
     'landuse': 'users/rogersckw9/vegetatiemonitor/yearly-classified-images',
-    'landuse-vs-legger': '',
+    'landuse-vs-legger': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
     'legger': 'users/rogersckw9/ecotoop/ecotoop-maps-6-class'
 }
 
@@ -686,7 +692,7 @@ def get_map_times(id, mode):
     date_end = date_end or ee.Date(date_end)
 
     if mode == 'daily':
-        images = maps_modes[id][mode](region, date_begin, date_end)
+        images = maps_modes[id][mode](region, date_begin, date_end, True)
         image_times = ee.List(images.aggregate_array('system:time_start')) \
             .map(to_date_time_string).getInfo()
         image_times = map(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M'), image_times)
