@@ -73,6 +73,10 @@ def get_satellite_images(region, date_begin, date_end):
             date_end = date_begin.advance(1, 'day')
 
         images = images.filterDate(date_begin, date_end)
+    filter_options = {
+        'score_percentile': 95
+    }
+    images = get_mostly_clean_images(images, region, options=filter_options)
 
     return images
 
@@ -87,6 +91,60 @@ def get_image_collection(collection, region, date_begin, date_end):
         images = images.filterDate(date_begin, date_end)
 
     return images
+
+def add_quality_score(images, g, score_percentile, scale):
+    """
+    Adds quality score to images based on clouds
+    :param images:
+    :param g:
+    :param score_percentile:
+    :param scale:
+    :return:
+    """
+    quality_band = 'green'
+
+    def cloud_score(i):
+        score = i.select(quality_band)
+        score = score.reduceRegion(ee.Reducer.percentile([score_percentile]), ee.Geometry(g), scale).values().get(0)
+
+        return i.set('quality_score', score)
+
+    return images.map(cloud_score)
+
+def get_mostly_clean_images(images, g, options=None):
+    geometry = ee.Geometry(g)
+    scale = 500
+    score_percentile = 85
+    cloud_frequency_threshold_delta = None
+
+    if options:
+        if 'scale' in options:
+            scale = options['scale']
+        if 'score_percentile' in options:
+            score_percentile = options['score_percentile']
+        if 'cloud_frequency_threshold_delta' in options:
+            cloud_frequency_threshold_delta = options['cloud_frequency_threshold_delta']
+
+    modis_clouds = ee.Image('users/gena/MODCF_meanannual')
+    cloud_frequency = modis_clouds.divide(10000).reduceRegion(
+        ee.Reducer.percentile([score_percentile]),
+        geometry.buffer(10000, scale*10), scale*10).values().get(0)
+    # print(cloud_frequency)
+
+    cloud_frequency = ee.Number(cloud_frequency).subtract(0.15).max(0.0)
+    if cloud_frequency_threshold_delta:
+        cloud_frequency = cloud_frequency.add(cloud_frequency_threshold_delta)
+
+    images = images.filterBounds(geometry)
+
+    # size = images.size()
+
+    images = add_quality_score(images, geometry, score_percentile, scale)
+
+    images = images.sort('quality_score').limit(images.size().multiply(ee.Number(1).subtract(cloud_frequency)).toInt())
+
+    return images
+
 
 def add_vis_parameter(vis, param, value):
     """
@@ -167,7 +225,7 @@ def _get_landuse(region, date_begin, date_end):
     :return:
     """
 
-    legger_id = 'users/gertjang/FI_Rijn_Maas_merged_2012_numfdls'
+    legger_id = 'users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017'
 
     legger = ee.FeatureCollection(legger_id)
 
@@ -315,12 +373,17 @@ def get_landuse_vs_legger(region, date_begin, date_end, vis):
 
 
 def _get_legger_image():
-    legger_features = ee.FeatureCollection('users/gena/vegetatie-vlakken-geo')
+    legger_features = ee.FeatureCollection('users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017')
 
-    legger_features = legger_features \
-        .map(lambda f: f.set('type', legger_classes.get(f.get('VL_KLASSE'))))
+    class_property = "Legger"
 
-    legger = ee.Image().int().paint(legger_features, 'type')
+    legger = legger_features \
+        .filter(ee.Filter.neq(class_property, None)) \
+        .map(lambda f: f.set(class_property, ee.Number(f.get(class_property)))) \
+        .remap([8, 9, 10, 1, 2, 3, 4], [1, 2, 2, 3, 4, 5, 6], class_property)
+
+    legger = ee.Image().int().paint(legger, class_property) \
+        .rename(class_property)
 
     return legger
 
@@ -646,8 +709,8 @@ def get_map_times(id, mode):
         image_info_list = []
         for start, end in zip(image_start_dates, image_end_dates):
             image_info_list.append({
-                "date_start": start.strftime('%Y-%m-%d'),
-                "date_end": end.strftime('%Y-%m-%d'),
+                "dateStart": start.strftime('%Y-%m-%d'),
+                "dateEnd": end.strftime('%Y-%m-%d'),
                 "dateFormat": 'YYYY-MM-DD',
                 "type": "interval"
             })
