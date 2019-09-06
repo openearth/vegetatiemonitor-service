@@ -224,17 +224,11 @@ def _get_landuse(region, date_begin, date_end):
     :return:
     """
 
-    # legger_id = 'users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017'
-    legger_id = 'users/gertjang/FI_Rijn_Maas_merged_2012_numfdls'
+    legger_id = 'users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017'
 
     legger = ee.FeatureCollection(legger_id)
 
     class_property = "Legger"
-
-    legger = legger \
-        .filter(ee.Filter.neq(class_property, None)) \
-        .map(lambda f: f.set(class_property, ee.Number(f.get(class_property)))) \
-        .remap([8, 9, 1, 2, 3, 4], [1, 2, 3, 4, 5, 6], class_property)
 
     legger_image = ee.Image().int().paint(legger, class_property) \
         .rename(class_property)
@@ -373,23 +367,12 @@ def get_landuse_vs_legger(region, date_begin, date_end, vis):
 
 
 def _get_legger_image():
-    # legger_features = ee.FeatureCollection('users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017')
+    legger_features = ee.FeatureCollection('users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017')
 
-    # class_property = "Legger"
-    #
-    # legger = legger_features \
-    #     .filter(ee.Filter.neq(class_property, None)) \
-    #     .map(lambda f: f.set(class_property, ee.Number(f.get(class_property)))) \
-    #     .remap([8, 9, 10, 1, 2, 3, 4], [1, 2, 2, 3, 4, 5, 6], class_property)
-    #
-    # legger = ee.Image().int().paint(legger, class_property) \
-    #     .rename(class_property)
-    legger_features = ee.FeatureCollection('users/gena/vegetatie-vlakken-geo')
+    class_property = "Legger"
 
-    legger_features = legger_features \
-        .map(lambda f: f.set('type', legger_classes.get(f.get('VL_KLASSE'))))
-
-    legger = ee.Image().int().paint(legger_features, 'type')
+    legger = ee.Image().int().paint(legger_features, class_property) \
+        .rename(class_property)
 
     return legger
 
@@ -648,7 +631,7 @@ maps_modes = {
     },
     'legger': {
         'daily': '',
-        'yearly': get_image_collection
+        'yearly': ''
     }
 }
 
@@ -684,9 +667,6 @@ def get_map_times(id, mode):
         date_end = datetime(2019, 1, 1, 0, 0, 0)
     else:
         return 'Error: only daily and yearly modes can be requested'
-
-    # date_begin = json['dateBegin']
-    # date_end = json['dateEnd']
 
     date_begin = date_begin or ee.Date(date_begin)
     date_end = date_end or ee.Date(date_end)
