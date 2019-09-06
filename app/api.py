@@ -126,11 +126,7 @@ def get_mostly_clean_images(images, g, options=None):
         if 'cloud_frequency_threshold_delta' in options:
             cloud_frequency_threshold_delta = options['cloud_frequency_threshold_delta']
 
-    # modis_clouds = ee.Image('users/gena/MODCF_meanannual')
     cloud_frequency = 0.74 # Calculated for the Netherlands, hardcoded for speed
-    # cloud_frequency = modis_clouds.divide(10000).reduceRegion(
-    #     ee.Reducer.percentile([score_percentile]),
-    #     geometry.buffer(10000, scale*10), scale*10).values().get(0)
 
     cloud_frequency = ee.Number(cloud_frequency).subtract(0.15).max(0.0)
     if cloud_frequency_threshold_delta:
@@ -372,7 +368,7 @@ def _get_legger_image():
     class_property = "Legger"
 
     legger = ee.Image().int().paint(legger_features, class_property) \
-        .rename(class_property)
+        .rename('type')
 
     return legger
 
