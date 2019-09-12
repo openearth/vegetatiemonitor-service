@@ -51,39 +51,35 @@ def test_get_zonal_info_legger(client):
     output = sorted(json.loads(s))
 
     output_expected = '''[
-        {
-           "id": 1,
-            "area_per_type": [
-              {
-                "area": 567062.7642463235,
-                "type": "0"
-              },
-              {
-                "area": 1624781.6086224725,
-                "type": "1"
-              },
-              {
-                "area": 252953.091796875,
-                "type": "2"
-              },
-              {
-                "area": 1854597.840469899,
-                "type": "3"
-              },
-              {
-                "area": 682186.362109375,
-                "type": "4"
-              },
-              {
-                "area": 382541.0576171875,
-                "type": "5"
-              },
-              {
-                "area": 104886.63330078125,
-                "type": "6"
-              }
-            ]
-        }
+      {
+        "area_per_type": [
+          {
+            "area": 1790886.72332644,
+            "type": "1"
+          },
+          {
+            "area": 455036.860223269,
+            "type": "2"
+          },
+          {
+            "area": 2252862.6694067856,
+            "type": "3"
+          },
+          {
+            "area": 650561.147265625,
+            "type": "4"
+          },
+          {
+            "area": 364032.44482421875,
+            "type": "5"
+          },
+          {
+            "area": 207065.13603515626,
+            "type": "6"
+          }
+        ],
+        "id": 1
+      }
     ]'''
 
     output_expected = sorted(json.loads(output_expected))
@@ -131,37 +127,36 @@ def test_get_zonal_info_landuse(client):
     output = sorted(json.loads(s))
 
     output_expected = '''[
+      {
+        "area_per_type": [
           {
-            "area_per_type": [
-              {
-                "area": 2193639.4108302696, 
-                "type": "1"
-              }, 
-              {
-                "area": 1002394.0534064798, 
-                "type": "2"
-              }, 
-              {
-                "area": 1919334.3929400274, 
-                "type": "3"
-              }, 
-              {
-                "area": 801042.7628006281, 
-                "type": "4"
-              }, 
-              {
-                "area": 240648.58447265625, 
-                "type": "5"
-              }, 
-              {
-                "area": 345520.400390625, 
-                "type": "6"
-              }
-            ], 
-            "id": 1
+            "area": 2195869.233553539,
+            "type": "1"
+          },
+          {
+            "area": 965375.9703986673,
+            "type": "2"
+          },
+          {
+            "area": 2063152.831169577,
+            "type": "3"
+          },
+          {
+            "area": 778296.2523360907,
+            "type": "4"
+          },
+          {
+            "area": 293278.7791819853,
+            "type": "5"
+          },
+          {
+            "area": 345519.912109375,
+            "type": "6"
           }
-        ]
-        '''
+        ],
+        "id": 1
+      }
+    ]'''
 
 
     output_expected = sorted(json.loads(output_expected))
@@ -326,3 +321,115 @@ def test_export_satellite_image(client):
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
+
+def test_get_zonal_timeseries_landuse(client):
+    input = '''{
+        "dateBegin": "2009-01-01",
+        "dateEnd": "2012-01-01",
+        "scale": 30,
+        "region": {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [5.846, 51.984],
+                            [5.849, 51.961],
+                            [5.910, 51.960],
+                            [5.916, 51.985],
+                            [5.877, 51.990],
+                            [5.846, 51.984]
+                        ]
+                    ]
+                },
+                "properties": {
+                    "id": 1
+                }
+            }]
+        }
+    }'''
+
+    r = client.post('/map/landuse/zonal-timeseries/', data=input,
+                    content_type='application/json')
+
+    assert r.status_code == 200
+
+    s = r.get_data(as_text=True)
+    open('test_output_zonal_timeseries_landuse.json', 'w').write(s)
+
+    output = sorted(json.loads(s))
+
+    output_expected = '''[
+      {
+        "series": [
+          {
+            "data": [
+              1575538.2241809322,
+              1597027.4294309132,
+              1615355.823107671
+            ],
+            "name": "1"
+          },
+          {
+            "data": [
+              609737.5581066655,
+              471684.49690204696,
+              451065.14585679
+            ],
+            "name": "2"
+          },
+          {
+            "data": [
+              1976327.0817512067,
+              1904760.6757597085,
+              1636408.7691406251
+            ],
+            "name": "3"
+          },
+          {
+            "data": [
+              837357.7167346431,
+              947976.878533816,
+              1113865.8698397768
+            ],
+            "name": "4"
+          },
+          {
+            "data": [
+              521424.64178466797,
+              438125.72943115234,
+              474773.5521850586
+            ],
+            "name": "5"
+          },
+          {
+            "data": [
+              112947.50300245098,
+              289305.2592163086,
+              357411.3091440238
+            ],
+            "name": "6"
+          }
+        ],
+        "xAxis": [
+          {
+            "data": [
+              "2009-06-01 00:00",
+              "2010-06-01 00:00",
+              "2011-06-01 00:00"
+            ]
+          }
+        ],
+        "yAxis": [
+          {
+            "type": "value"
+          }
+        ]
+      }
+    ]'''
+
+    output_expected = sorted(json.loads(output_expected))
+
+    assert output[0]["series"] == output_expected[0]["series"]

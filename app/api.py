@@ -51,6 +51,8 @@ legger_classes = {
     '': 0
 }
 
+class_names = list(legger_classes.keys())
+
 legger_classes = ee.Dictionary(legger_classes)
 
 classes_legger = ee.Dictionary.fromLists(
@@ -488,6 +490,135 @@ zonal_info = {
     'legger': get_zonal_info_legger
 }
 
+yearly_collections = {
+    'satellite': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
+    'ndvi': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
+    'landuse': 'users/rogersckw9/vegetatiemonitor/yearly-classified-images',
+    'landuse-vs-legger': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
+    'legger': 'users/rogersckw9/ecotoop/ecotoop-maps-6-class'
+}
+
+def _get_zonal_timeseries(features, images, scale):
+    images = ee.ImageCollection(images)
+    image_times = ee.List(images.aggregate_array('system:time_start')) \
+        .map(to_date_time_string).getInfo()
+
+    area = ee.Image.pixelArea().rename('area')
+
+    images = images.map(lambda i: area.addBands(i.rename('type')))
+
+    # for every input feature, compute area
+    def get_feature_info(f):
+        f = ee.Feature(f)
+
+        reducer = ee.Reducer.sum().group(**{
+            "groupField": 1,
+            "groupName": 'type',
+        })
+
+        geom = f.geometry()
+
+        def reduce_image(i):
+            area = i.reduceRegion(reducer, geom, scale)
+            area = ee.Feature(None).set({
+                'area': ee.List(ee.Dictionary(area).get('groups'))
+            })
+            return area
+
+        def format_area(o):
+            o = ee.Dictionary(o)
+            t = ee.Number(o.get('type')).format('%d')
+            a = o.get('sum')
+            return {
+                'type': t,
+                'area': a
+            }
+
+        info = images.map(reduce_image)
+        area = ee.List(info.aggregate_array("area"))#.map(format_area)
+
+        return {
+            "id": f.get('id'),
+            "area": area,
+            "times": image_times
+        }
+        # return ee.Feature(area
+
+    return features.toList(5000).map(get_feature_info)
+    # return data
+
+def get_zonal_timeseries_landuse(region, date_begin, date_end, scale):
+    features = ee.FeatureCollection(region["features"])
+    collection = yearly_collections["landuse"]
+    images = get_image_collection(collection, features.geometry(), date_begin, date_end)
+
+    info = _get_zonal_timeseries(features, images, scale)
+    info = info.getInfo()
+    timeseries = []
+    for i, feature_data in enumerate(info):
+        timeseries.append({
+            "series": []
+        })
+        for j in range(1, 7, 1):
+            timeseries[i]["series"].append({"name": str(j), "data": []})
+
+        timeseries[i]["xAxis"] = [{
+            "data": feature_data["times"]
+        }]
+        timeseries[i]["yAxis"] = [{
+            "type": "value"
+        }]
+        for a in feature_data['area']:
+            for item in a:
+                type = item["type"]
+                timeseries[i]["series"][type - 1]["data"].append(item["sum"])
+
+
+    return timeseries
+
+
+def get_zonal_timeseries_landuse_vs_legger(region, date_begin, date_end, scale):
+    pass
+
+
+def get_zonal_timeseries_ndvi(region, date_begin, date_end, scale):
+    pass
+
+
+def get_zonal_timeseries_legger(region, date_begin, date_end, scale):
+    pass
+
+zonal_timeseries = {
+    'landuse': get_zonal_timeseries_landuse,
+    'landuse-vs-legger': get_zonal_timeseries_landuse_vs_legger,
+    'ndvi': get_zonal_timeseries_ndvi,
+    'legger': get_zonal_timeseries_legger
+}
+
+modes = ['daily', 'yearly']
+
+maps_modes = {
+    'satellite':{
+        'daily': get_satellite_images,
+        'yearly': get_image_collection
+    },
+    'ndvi':{
+        'daily': get_satellite_images,
+        'yearly': get_image_collection
+    },
+    'landuse': {
+        'daily': '',
+        'yearly': get_image_collection
+    },
+    'landuse-vs-legger': {
+        'daily': '',
+        'yearly': ''
+    },
+    'legger': {
+        'daily': '',
+        'yearly': ''
+    }
+}
 
 def get_image_url(image):
     map_id = image.getMapId()
@@ -606,38 +737,36 @@ def get_map_zonal_info(id):
 
     return jsonify(info)
 
-modes = ['daily', 'yearly']
 
-maps_modes = {
-    'satellite':{
-        'daily': get_satellite_images,
-        'yearly': get_image_collection
-    },
-    'ndvi':{
-        'daily': get_satellite_images,
-        'yearly': get_image_collection
-    },
-    'landuse': {
-        'daily': '',
-        'yearly': get_image_collection
-    },
-    'landuse-vs-legger': {
-        'daily': '',
-        'yearly': ''
-    },
-    'legger': {
-        'daily': '',
-        'yearly': ''
-    }
-}
+@app.route('/map/<string:id>/zonal-timeseries/', methods=['POST'])
+@flask_cors.cross_origin()
+def get_map_zonal_timeseries(id):
+    """
+    Returns zonal timeseries per input feature (region)
+    """
 
-yearly_collections = {
-    'satellite': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
-    'ndvi': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
-    'landuse': 'users/rogersckw9/vegetatiemonitor/yearly-classified-images',
-    'landuse-vs-legger': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
-    'legger': 'users/rogersckw9/ecotoop/ecotoop-maps-6-class'
-}
+    if id != 'landuse':
+        return 'Error: zonal timeseries for {0} is not supported yet' \
+            .format(id)
+
+    json = request.get_json()
+
+    region = json['region']
+
+    date_begin = None
+    date_end = None
+
+    if 'dateBegin' in json:
+        date_begin = ee.Date(json['dateBegin'])
+
+    if 'dateEnd' in json:
+        date_end = ee.Date(json['dateEnd'])
+
+    scale = json['scale']
+
+    info = zonal_timeseries[id](region, date_begin, date_end, scale)
+
+    return jsonify(info)
 
 
 @app.route('/map/<string:id>/times/<string:mode>', methods=['POST'])
