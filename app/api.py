@@ -551,6 +551,11 @@ def get_zonal_timeseries_landuse(region, date_begin, date_end, scale):
     features = ee.FeatureCollection(region["features"])
     collection = yearly_collections["landuse"]
     images = get_image_collection(collection, features.geometry(), date_begin, date_end)
+    features = ee.FeatureCollection(region["features"])
+
+    image = _get_landuse(features.geometry(), date_begin, date_end)
+
+    info = _get_zonal_info(features, image, scale)
 
     info = _get_zonal_timeseries(features, images, scale)
     info = info.getInfo()
@@ -562,16 +567,20 @@ def get_zonal_timeseries_landuse(region, date_begin, date_end, scale):
         for j in range(1, 7, 1):
             timeseries[i]["series"].append({"name": str(j), "type": "line", "data": []})
 
-        timeseries[i]["xAxis"] = [{
+        timeseries[i]["xAxis"] = {
             "data": feature_data["times"]
-        }]
-        timeseries[i]["yAxis"] = [{
+        }
+        timeseries[i]["yAxis"] = {
             "type": "value"
-        }]
+        }
         for a in feature_data['area']:
-            for item in a:
-                type = item["type"]
-                timeseries[i]["series"][type - 1]["data"].append(item["sum"])
+            for k in range(1, 7, 1):
+                val = next((item for item in a if item["type"] == k), None)
+                if not val:
+                    timeseries[i]["series"][k - 1]["data"].append("-")
+                else:
+                    #     item = d.get("type", None) == str(k)
+                    timeseries[i]["series"][k - 1]["data"].append(val.get("sum"))
 
 
     return timeseries
