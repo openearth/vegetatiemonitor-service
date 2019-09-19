@@ -996,14 +996,7 @@ def prepare_voorspel_data(image, ecotop_features, grass_pct, herb_pct, willow_pc
         """
         """
         # Get the previous calculated image
-        # this_date =
-        # date_last = start_date.advance(ee.Number(year).subtract(1), 'year')
         date_now = start_date.advance(ee.Number(year), 'year')
-        # prev_im = ee.Image(ee.ImageCollection(prev)
-        #                    .filter(ee.Filter.eq('system:time_start', date_last))
-        #                    .first()
-        #                    )
-        # prev_im = ee.Image(ee.ImageCollection(prev).sort("system:time_start", False).first())
         prev_im = ee.Image(ee.List(prev).get(-1))
         water_now = prev_im.select('waterRoughness')
 
@@ -1075,7 +1068,7 @@ def merge_roughness_regions(images_shoreline, images_terrestrial):
         image1 = ee.Image(i).unmask()
         image2 = ee.Image(images_terrestrial.filterDate(image1.get('system:time_start')).first()).unmask()
         water_rough = image1.select('waterRoughness').add(image2.select('waterRoughness'))
-        water_rough = water_rough.updateMask(water_rough.neq(0))
+        # water_rough = water_rough.updateMask(water_rough.neq(0))
         bare_rough = image1.select('bareRoughness').add(image2.select('bareRoughness'))
         bare_rough = bare_rough.updateMask(bare_rough.neq(0))
         grass_rough = image1.select('grassRoughness').add(image2.select('grassRoughness'))
@@ -1188,7 +1181,19 @@ def get_roughness_info(feature, image_collection, prediction_images, ecotopen_im
 
     return merged_collection
 
+def get_voorspel_timeseries(region, collection):
+    times = ee.List(roughness_collection.aggregate_array('system:time_start'))\
+        .map(to_date_time_string).getInfo()
 
+    reducer = ee.Reducer.mean()
+
+    def reduce_mean(i):
+        mean_roughness = i.reduceRegion(reducer, region, scale)
+        return i.set({'mean': mean_roughness})
+
+    info = collection.map(reduce_mean)
+    info = info.aggregate_array('mean').getInfo()
+    return times, info
 
 
 @app.route('/voorspel/', methods=['POST'])
@@ -1216,7 +1221,7 @@ def get_voorspel():
     future_roughness_images = predict_roughness(region, ecotop_map, classified_images, start_date, num_years)
     total_roughness_images = future_roughness_images.map(calculate_total_roughness)
     roughness_collection = get_roughness_info(region, classified_images, total_roughness_images, ecotop_images, scale)
-    timeseries(roughness_collection)
+    timeseries(region, roughness_collection)
 
     return jsonify(info)
 
