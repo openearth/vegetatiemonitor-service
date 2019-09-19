@@ -537,10 +537,45 @@ def _get_zonal_timeseries(features, images, scale):
     return features.toList(5000).map(get_feature_info)
 
 
+legend_remap = {
+    "1": {
+        "name": "Water",
+        "color": "#BDEEFF"
+    },
+    "2": {
+        "name": "Verhard oppervlak",
+        "color": "#FF817E"
+    },
+    "3": {
+        "name": "Gras en Akker",
+        "color": "#EEFAD4"
+    },
+    "4": {
+        "name": "Riet en Ruigte",
+        "color": "#DEBDDE"
+    },
+    "5": {
+        "name": "Bos",
+        "color": "#73BF73"
+    },
+    "6": {
+        "name": "Struweel",
+        "color": "#D97A36"
+    }
+}
+
 def get_zonal_timeseries_landuse(region, date_begin, date_end, scale):
     features = ee.FeatureCollection(region["features"])
+    # Add empty image for 2012
+    empty = ee.Image().set("system:time_start", ee.Date("2012-06-01").millis()).rename("remapped")
     collection = yearly_collections["landuse"]
-    images = get_image_collection(collection, features.geometry(), date_begin, date_end)
+    images = get_image_collection(collection, features.geometry(), date_begin, date_end)\
+        .merge(ee.ImageCollection([empty])).sort("system:time_start")
+    features = ee.FeatureCollection(region["features"])
+
+    image = _get_landuse(features.geometry(), date_begin, date_end)
+
+    info = _get_zonal_info(features, image, scale)
 
     info = _get_zonal_timeseries(features, images, scale)
     info = info.getInfo()
@@ -550,19 +585,22 @@ def get_zonal_timeseries_landuse(region, date_begin, date_end, scale):
             "series": []
         })
         for j in range(1, 7, 1):
-            timeseries[i]["series"].append({"name": str(j), "data": []})
+            timeseries[i]["series"].append({"name": legend_remap[str(j)]["name"], "type": "line", "data": [], "color": legend_remap[str(j)]["color"]})
 
-        timeseries[i]["xAxis"] = [{
+        timeseries[i]["xAxis"] = {
             "data": feature_data["times"]
-        }]
-        timeseries[i]["yAxis"] = [{
+        }
+        timeseries[i]["yAxis"] = {
             "type": "value"
-        }]
+        }
         for a in feature_data['area']:
-            for item in a:
-                type = item["type"]
-                timeseries[i]["series"][type - 1]["data"].append(item["sum"])
-
+            for k in range(1, 7, 1):
+                val = next((item for item in a if item["type"] == k), None)
+                if not val:
+                    timeseries[i]["series"][k - 1]["data"].append("-")
+                else:
+                    #     item = d.get("type", None) == str(k)
+                    timeseries[i]["series"][k - 1]["data"].append(val.get("sum"))
 
     return timeseries
 
@@ -743,14 +781,14 @@ def get_map_zonal_timeseries(id):
 
     region = json['region']
 
-    date_begin = None
-    date_end = None
+    date_begin = ee.Date("2000-01-01")
+    date_end = ee.Date("2019-01-01")
 
-    if 'dateBegin' in json:
-        date_begin = ee.Date(json['dateBegin'])
-
-    if 'dateEnd' in json:
-        date_end = ee.Date(json['dateEnd'])
+    # if 'dateBegin' in json:
+    #     date_begin = ee.Date(json['dateBegin'])
+    #
+    # if 'dateEnd' in json:
+    #     date_end = ee.Date(json['dateEnd'])
 
     scale = json['scale']
 
