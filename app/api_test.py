@@ -370,7 +370,8 @@ def test_get_zonal_timeseries_landuse(client):
               1597027.4294309132,
               1615355.823107671
             ],
-            "name": "1"
+            "name": "1",
+            "type": "line"
           },
           {
             "data": [
@@ -378,7 +379,8 @@ def test_get_zonal_timeseries_landuse(client):
               471684.49690204696,
               451065.14585679
             ],
-            "name": "2"
+            "name": "2",
+            "type": "line"
           },
           {
             "data": [
@@ -386,7 +388,8 @@ def test_get_zonal_timeseries_landuse(client):
               1904760.6757597085,
               1636408.7691406251
             ],
-            "name": "3"
+            "name": "3",
+            "type": "line"
           },
           {
             "data": [
@@ -394,7 +397,8 @@ def test_get_zonal_timeseries_landuse(client):
               947976.878533816,
               1113865.8698397768
             ],
-            "name": "4"
+            "name": "4",
+            "type": "line"
           },
           {
             "data": [
@@ -402,7 +406,8 @@ def test_get_zonal_timeseries_landuse(client):
               438125.72943115234,
               474773.5521850586
             ],
-            "name": "5"
+            "name": "5",
+            "type": "line"
           },
           {
             "data": [
@@ -410,7 +415,8 @@ def test_get_zonal_timeseries_landuse(client):
               289305.2592163086,
               357411.3091440238
             ],
-            "name": "6"
+            "name": "6",
+            "type": "line"
           }
         ],
         "xAxis": [

@@ -560,7 +560,7 @@ def get_zonal_timeseries_landuse(region, date_begin, date_end, scale):
             "series": []
         })
         for j in range(1, 7, 1):
-            timeseries[i]["series"].append({"name": str(j), "data": []})
+            timeseries[i]["series"].append({"name": str(j), "type": "line", "data": []})
 
         timeseries[i]["xAxis"] = [{
             "data": feature_data["times"]
