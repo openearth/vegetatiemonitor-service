@@ -868,10 +868,11 @@ def wet_moist_masks(start_date, feature):
     """
     bounds = feature.geometry()
     start_year = ee.Date(start_date).get('year')
-    lookback = start_date.advance(-1, 'year')
+    begin_date = ee.Date(start_date).advance(1, 'month')
+    lookback = begin_date.advance(-1, 'year')
 
     # get satellite images and filter out clouded images
-    images = get_satellite_images(bounds, lookback, start_date, True)
+    images = get_satellite_images(bounds, lookback, begin_date, True)
 
     ndwi_bands = ['green', 'nir']
     # Feb-Mar ndwi (wet season)
@@ -1097,39 +1098,44 @@ def calculate_total_roughness(image):
         .add(herb_rough).add(forest_rough).add(willow_rough)
     return ee.Image(total) \
         .set('system:time_start', ee.Date(image.get('system:time_start'))) \
-        .rename('total_roughness')
+        .rename('voorspeldeRuwheid')
 
 
-def merge_roughness_regions(images_shoreline, images_terrestrial):
+def merge_roughness_regions(classified_image, images_shoreline, images_terrestrial, image_no_succession):
 
     def combine_images(i):
         image1 = ee.Image(i).unmask()
         image2 = ee.Image(images_terrestrial.filterDate(image1.get('system:time_start')).first()).unmask()
+        image3 = ee.Image(image_no_succession).unmask()
         water_rough = image1.select('waterRoughness').add(image2.select('waterRoughness'))
         # water_rough = water_rough.updateMask(water_rough.neq(0))
-        bare_rough = image1.select('bareRoughness').add(image2.select('bareRoughness'))
+        bare_rough = image1.select('bareRoughness').add(image2.select('bareRoughness')).add(image3.eq(0.15))
         bare_rough = bare_rough.updateMask(bare_rough.neq(0))
-        grass_rough = image1.select('grassRoughness').add(image2.select('grassRoughness'))
+        grass_rough = image1.select('grassRoughness').add(image2.select('grassRoughness')).add(image3.eq(0.39))
         grass_rough = grass_rough.updateMask(grass_rough.neq(0))
-        herb_rough = image1.select('herbaceousRoughness').add(image2.select('herbaceousRoughness'))
-        herb_rough = herbRough.updateMask(herb_rough.neq(0))
-        forest_rough = image1.select('forestRoughness').add(image2.select('forestRoughness'))
+        herb_rough = image1.select('herbaceousRoughness').add(image2.select('herbaceousRoughness')).add(image3.eq(1.45))
+        herb_rough = herb_rough.updateMask(herb_rough.neq(0))
+        forest_rough = image1.select('forestRoughness').add(image2.select('forestRoughness')).add(image3.eq(12.84))
         forest_rough = forest_rough.updateMask(forest_rough.neq(0))
-        willow_rough = image1.select('willowRoughness').add(image2.select('willowRoughness'))
+        willow_rough = image1.select('willowRoughness').add(image2.select('willowRoughness')).add(image3.eq(24.41))
         willow_rough = willow_rough.updateMask(willow_rough.neq(0))
         total = water_rough.addBands(bare_rough).addBands(grass_rough) \
             .addBands(herb_rough).addBands(forest_rough).addBands(willow_rough)
         return ee.Image(total) \
             .set('system:time_start', ee.Date(image1.get('system:time_start'))) \
             .rename(['waterRoughness', 'bareRoughness', 'grassRoughness',
-                    'herbaceousRoughness', 'forestRoughness', 'willowRoughness'])
+                     'herbaceousRoughness', 'forestRoughness', 'willowRoughness']) \
+            .mask(classified_image)
 
     cumulative_images = images_shoreline.map(combine_images)
     return cumulative_images
 
 
-def predict_roughness(feature, ecotop_features, classified_images, start_date, num_years):
+def predict_roughness(region, start_date, num_years):
     # start_date = ee.Date(startYearString + '-11-01')
+    feature = ee.FeatureCollection(region["features"]).first()
+    ecotop_features = ee.FeatureCollection("users/gertjang/succession/ecotopen_cyclus_drie_rijntakken_utm31n")
+    classified_images = ee.ImageCollection('users/rogersckw9/vegetatiemonitor/yearly-classified-images')
     start_year = ee.Date(start_date).get('year')
     lookback = start_date.advance(-1, 'year')
 
@@ -1145,14 +1151,18 @@ def predict_roughness(feature, ecotop_features, classified_images, start_date, n
     hydrologie_image = ee.Image().int().paint(ecotop_hydrology, 'HYDROLOGIE')
     shoreline = hydrologie_image.gte(3).And(hydrologie_image.lte(7))
     terrestrial = hydrologie_image.lte(2)
+    no_succession = hydrologie_image.gte(8)
 
     # Prepare starting Image
     classified_image = ee.Image(classified_images.filterDate(
         ee.Date.fromYMD(start_year, 1, 1),
         ee.Date.fromYMD(start_year, 12, 31)).first()
     )
+    roughness_image = classified_image.remap([1, 2, 3, 4, 5, 6], [0.0, 0.15, 0.39, 1.45, 12.84, 24.41]).rename(
+        "predicted")
     classified_image_shore = classified_image.updateMask(shoreline)
     classified_image_terrestrial = classified_image.updateMask(terrestrial)
+    roughness_no_succession = roughness_image.updateMask(no_succession)
 
     # Shoreline Evolution Rates
     # 10% grass will change into herb in 10 yr
@@ -1188,50 +1198,82 @@ def predict_roughness(feature, ecotop_features, classified_images, start_date, n
                                           start_date,
                                           num_years)
 
-    total_roughness_images = merge_roughness_regions(cumulative_shore, cumulative_terrestrial)
+    total_roughness_images = merge_roughness_regions(classified_image, cumulative_shore, cumulative_terrestrial, roughness_no_succession)
     return total_roughness_images
 
 
-def get_roughness_info(feature, image_collection, prediction_images, ecotopen_images, scale):
+def get_roughness_info(prediction_images):
     def add_date(i):
         return i.set('system:time_start', ee.Date(i.get('system:time_start')))
 
-    def mask_images(i):
-        return i.mask(i.neq(0))
+    # def mask_images(i):
+    #     return i.mask(i.neq(0)).rename("voorspeldeRuwheid")
 
     def class_to_roughness(i):
         class_values = [1, 2, 3, 4, 5, 6]
         class_roughness = [0.0, 0.15, 0.39, 1.45, 12.84, 24.41]
-        return i.remap(class_values, class_roughness)
+        return i.remap(class_values, class_roughness).rename("ruwheid")
 
+    predict_start = ee.Date('2019-06-01')
     prediction_images = prediction_images.map(add_date)
-    prediction_images = prediction_images.map(mask_images)
+    prediction_images = prediction_images.filterDate(predict_start, predict_start.advance(10, 'years'))
 
-    ecotopen_images = ecotopen_images.map(add_date)
-    ecotopen_images = ecotopen_images.map(class_to_roughness)
-    ecotopen_images = ecotopen_images.select(['remapped'], ['ecotoop'])
+    # ecotop_features = ee.FeatureCollection("users/gertjang/succession/ecotopen_cyclus_drie_rijntakken_utm31n")
+    image_collection = ee.ImageCollection('users/rogersckw9/vegetatiemonitor/yearly-classified-images')
+    empty = ee.Image().set("system:time_start", ee.Date("2012-06-01").millis()).rename("ruwheid")
+    image_collection = image_collection.merge(ee.ImageCollection([empty])).sort("system:time_start")
+    # ecotopen_images = ecotopen_images.map(add_date)
+    # ecotopen_images = ecotopen_images.map(class_to_roughness)
+    # ecotopen_images = ecotopen_images.select(['remapped'], ['ecotoop'])
 
     # filter collection only on growth season for display
     image_collection = image_collection.map(add_date)
     image_collection = image_collection.map(class_to_roughness)
 
-    merged_collection = image_collection.merge(prediction_images).merge(ecotopen_rough)
+    merged_collection = image_collection.merge(prediction_images)#.merge(ecotopen_rough)
 
     return merged_collection
 
-def get_voorspel_timeseries(region, collection):
-    times = ee.List(roughness_collection.aggregate_array('system:time_start'))\
+def get_voorspel_timeseries(region, collection, scale):
+    feature = ee.FeatureCollection(region["features"]).first()
+    geom = feature.geometry()
+    times = ee.List(collection.aggregate_array('system:time_start'))\
         .map(to_date_time_string).getInfo()
 
     reducer = ee.Reducer.mean()
 
     def reduce_mean(i):
-        mean_roughness = i.reduceRegion(reducer, region, scale)
+        mean_roughness = i.reduceRegion(reducer, geom, scale)
         return i.set({'mean': mean_roughness})
 
     info = collection.map(reduce_mean)
     info = info.aggregate_array('mean').getInfo()
-    return times, info
+
+    timeseries = [{
+        "xAxis": {
+            "data": times
+        },
+        "yAxis": {
+            "type": "value"
+        },
+        "series": []
+    }]
+
+    all_keys = set().union(*(d.keys() for d in info))
+    for key in all_keys:
+        timeseries[0]["series"].append({"name": key, "data": [], "type": "line"})
+
+    for time, value in zip(times, info):
+        for k, key in enumerate(all_keys):
+            val = next((item for item in value if list(value)[0] == key), None)
+            # print(val, key)
+            if not val:
+                timeseries[0]["series"][k]["data"].append("-")
+            else:
+                #     item = d.get("type", None) == str(k)
+                timeseries[0]["series"][k]["data"].append(value[val])
+
+    return timeseries
 
 
 @app.route('/voorspel/', methods=['POST'])
@@ -1240,26 +1282,26 @@ def get_voorspel():
     json = request.get_json()
 
     region = json['region']
+    # classified_images =
+    # date_begin = None
+    # date_end = None
+    #
+    # if 'dateBegin' in json:
+    #     date_begin = ee.Date(json['dateBegin'])
+    #
+    # if 'dateEnd' in json:
+    #     date_end = ee.Date(json['dateEnd'])
 
-    date_begin = None
-    date_end = None
-
-    if 'dateBegin' in json:
-        date_begin = ee.Date(json['dateBegin'])
-
-    if 'dateEnd' in json:
-        date_end = ee.Date(json['dateEnd'])
-
-    scale = json['scale']
+    scale = 10
+    # json['scale']
 
     begin_year = 2018
     num_years = 10
-    start_date = ee.Date.fromYMD(begin_year, 10, 1)
-    lookback_date = start_date.advance(-1, 'year')
-    future_roughness_images = predict_roughness(region, ecotop_map, classified_images, start_date, num_years)
+    start_date = ee.Date.fromYMD(begin_year, 6, 1)
+    future_roughness_images = predict_roughness(region, start_date, num_years)
     total_roughness_images = future_roughness_images.map(calculate_total_roughness)
-    roughness_collection = get_roughness_info(region, classified_images, total_roughness_images, ecotop_images, scale)
-    timeseries(region, roughness_collection)
+    roughness_collection = get_roughness_info(total_roughness_images)
+    info = get_voorspel_timeseries(region, roughness_collection, scale)
 
     return jsonify(info)
 
