@@ -498,7 +498,7 @@ yearly_collections = {
     'satellite': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
     'ndvi': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
     'landuse': 'users/rogersckw9/vegetatiemonitor/yearly-classified-images',
-    'landuse-vs-legger': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
+    'landuse-vs-legger': 'users/rogersckw9/vegetatiemonitor/classificatie-vs-legger',
     'legger': 'users/rogersckw9/ecotoop/ecotoop-maps-6-class'
 }
 
