@@ -568,6 +568,33 @@ legend_remap = {
     }
 }
 
+legend_remap = {
+    "1": {
+        "name": "Water",
+        "color": "#BDEEFF"
+    },
+    "2": {
+        "name": "Verhard oppervlak",
+        "color": "#FF817E"
+    },
+    "3": {
+        "name": "Gras en Akker",
+        "color": "#EEFAD4"
+    },
+    "4": {
+        "name": "Riet en Ruigte",
+        "color": "#DEBDDE"
+    },
+    "5": {
+        "name": "Bos",
+        "color": "#73BF73"
+    },
+    "6": {
+        "name": "Struweel",
+        "color": "#D97A36"
+    }
+}
+
 def get_zonal_timeseries_landuse(region, date_begin, date_end, scale):
     features = ee.FeatureCollection(region["features"])
     # Add empty image for 2012

@@ -410,4 +410,3 @@ def test_voorspel(client):
     # output = sorted(json.loads(s))
     # print(output)
     # assert output[0]["series"][0]["data"][0] == 1.6977447813586202
-
