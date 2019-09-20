@@ -222,6 +222,10 @@ def _get_landuse(region, date_begin, date_end):
     :return:
     """
 
+    area = region.area(10).getInfo()
+    if area <= 1e8:
+        region = region.buffer(ee.Number(area).sqrt())
+
     legger_id = 'users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017'
 
     legger = ee.FeatureCollection(legger_id)
@@ -952,9 +956,6 @@ def prepare_voorspel_data(image, ecotop_features, grass_pct, herb_pct, willow_pc
     class_values = [1, 2, 3, 4, 5, 6]
     class_roughness = [0.0, 0.15, 0.39, 1.45, 12.84, 24.41]
 
-    start_year = start_date.get('year')
-    lookback = start_date.advance(-1, 'year')
-
     # Convert image from classes to roughness
     image = image.remap(class_values, class_roughness)
 
@@ -967,13 +968,13 @@ def prepare_voorspel_data(image, ecotop_features, grass_pct, herb_pct, willow_pc
     k_forest = ee.Number(class_roughness[4])
     k_willow = ee.Number(class_roughness[5])
 
-    k_water_im = ee.Image(class_roughness[0])
-    k_bare_im = ee.Image(class_roughness[1])
-    k_grass_im = ee.Image(class_roughness[2])
-    k_herbaceous_im = ee.Image(class_roughness[3])
-    k_reed_im = ee.Image(20.73)
-    k_forest_im = ee.Image(class_roughness[4])
-    k_willow_im = ee.Image(class_roughness[5])
+    k_water_im = ee.Image(k_water)
+    k_bare_im = ee.Image(k_bare)
+    k_grass_im = ee.Image(k_grass)
+    k_herbaceous_im = ee.Image(k_herbaceous)
+    k_reed_im = ee.Image(k_reed)
+    k_forest_im = ee.Image(k_forest)
+    k_willow_im = ee.Image(k_willow)
 
     # Rates for progression from one class to another.
     # All rates take 10 yr to change class
@@ -1003,10 +1004,12 @@ def prepare_voorspel_data(image, ecotop_features, grass_pct, herb_pct, willow_pc
     ecotoop_mech_dyn = ecotop_features.remap(mech_dyn_list, [0, 1, 2, 3, 4], 'MECH_DYN')
 
     mech_dyn_im = ee.Image().int().paint(ecotoop_mech_dyn, 'MECH_DYN')
-    weak_dynamics = mech_dyn_im.eq(0).Or(mech_dyn_im.eq(1))
+    weak_dynamics = mech_dyn_im.lte(1)
     moderate_dynamics = mech_dyn_im.eq(2)
+    strong_dynamics = mech_dyn_im.gte(3)
 
     # bare remain bare with strong dynamics
+    remain_bare = image.eq(k_bare).multiply(strong_dynamics);
     # bare will change to reed in 2 yr if it is wet and weak dynamics
     bare_to_reed_mask = image.eq(k_bare).multiply(wet_mask).multiply(weak_dynamics)
     # bare will change to willow if moist and moderate dynamics
@@ -1162,6 +1165,7 @@ def predict_roughness(region, start_date, num_years):
         "predicted")
     classified_image_shore = classified_image.updateMask(shoreline)
     classified_image_terrestrial = classified_image.updateMask(terrestrial)
+    classified_image_no_succession = classified_image.updateMask(no_succession)
     roughness_no_succession = roughness_image.updateMask(no_succession)
 
     # Shoreline Evolution Rates
