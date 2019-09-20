@@ -727,7 +727,7 @@ def export_map(id):
 
     url = image.getDownloadURL({
         "format": format,
-        "name": id,
+        "name": id+"_"+date_begin+"_"+date_end,
         "scale": scale,
         "region": json.dumps(region)})
 
