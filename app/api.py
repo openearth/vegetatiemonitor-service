@@ -666,11 +666,11 @@ maps_modes = {
         'yearly': get_image_collection
     },
     'landuse': {
-        'daily': '',
+        'daily': get_satellite_images,
         'yearly': get_image_collection
     },
     'landuse-vs-legger': {
-        'daily': '',
+        'daily': get_satellite_images,
         'yearly': ''
     },
     'legger': {
