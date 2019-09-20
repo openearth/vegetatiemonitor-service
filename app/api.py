@@ -222,9 +222,9 @@ def _get_landuse(region, date_begin, date_end):
     :return:
     """
 
-    area = region.area(10).getInfo()
+    area = ee.Geometry(region).area(10).getInfo()
     if area <= 1e8:
-        region = region.buffer(ee.Number(area).sqrt())
+        region = ee.Geometry(region).buffer(ee.Number(area).sqrt())
 
     legger_id = 'users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017'
 

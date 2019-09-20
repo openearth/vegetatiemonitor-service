@@ -3,8 +3,6 @@ import pytest
 import ee
 
 from . import main
-from .api import prepare_voorspel_data, wet_moist_masks, bare_grazing_variables, calculate_total_roughness
-
 
 @pytest.fixture()
 def client():
@@ -132,34 +130,33 @@ def test_get_zonal_info_landuse(client):
       {
         "area_per_type": [
           {
-            "area": 2195869.233553539,
+            "area": 2070230.8170802696,
             "type": "1"
           },
           {
-            "area": 965375.9703986673,
+            "area": 688500.925067019,
             "type": "2"
           },
           {
-            "area": 2063152.831169577,
+            "area": 1475154.438426777,
             "type": "3"
           },
           {
-            "area": 778296.2523360907,
+            "area": 1238260.7638825062,
             "type": "4"
           },
           {
-            "area": 293278.7791819853,
+            "area": 410510.32361557905,
             "type": "5"
           },
           {
-            "area": 345519.912109375,
+            "area": 758932.494140625,
             "type": "6"
           }
         ],
         "id": 1
       }
     ]'''
-
 
     output_expected = sorted(json.loads(output_expected))
 
@@ -363,99 +360,54 @@ def test_get_zonal_timeseries_landuse(client):
 
     assert len(output[0]["series"]) == 6
 
-def test_get_zonal_timeseries_landuse(client):
-    r = client.post('/map/landuse/zonal-timeseries/', data=input,
+def test_voorspel(client):
+    input = '''{
+        "region": {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                  "type": "Feature",
+                  "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                      [
+                        [
+                          5.869412857055636,
+                          51.97090473175753
+                        ],
+                        [
+                          5.888209777832003,
+                          51.96746759577021
+                        ],
+                        [
+                          5.895419555664034,
+                          51.978306898532956
+                        ],
+                        [
+                          5.884690719604464,
+                          51.98142601683456
+                        ],
+                        [
+                          5.869412857055636,
+                          51.97090473175753
+                        ]
+                      ]
+                    ]
+                  },
+                  "id": "0",
+                  "properties": {}
+                }
+            ]
+        }
+    }'''
+
+    r = client.post('/voorspel/', data=input,
                     content_type='application/json')
 
     assert r.status_code == 200
 
     s = r.get_data(as_text=True)
+    output = sorted(json.loads(s))
+    print(output)
+    assert output[0]["series"][0]["data"][0] == 1.6977447813586202
 
-
-def test_wet_moist_masks():
-    start_date = ee.Date('2018-11-01')
-    feature = ee.Feature(
-        ee.Geometry.Polygon(
-            [[[6.0115432966861135, 51.88332509634447],
-              [6.0286236036929495, 51.87898050435874],
-              [6.025705360284746, 51.88655677657944],
-              [6.011972450128496, 51.88660975300831]]]
-        )
-    )
-    moisture_masks = wet_moist_masks(start_date, feature)
-    assert moisture_masks.bandNames().getInfo() == ['moistMask', 'wetMask']
-
-def test_bare_grazing():
-    ecotop_features = ee.FeatureCollection("users/gertjang/succession/ecotopen_cyclus_drie_rijntakken_utm31n")
-    start_date = ee.Date('2018-11-01')
-    feature = ee.Feature(
-        ee.Geometry.Polygon(
-            [[[6.0115432966861135, 51.88332509634447],
-              [6.0286236036929495, 51.87898050435874],
-              [6.025705360284746, 51.88655677657944],
-              [6.011972450128496, 51.88660975300831]]]
-        )
-    )
-
-    class_values = [1, 2, 3, 4, 5, 6]
-    class_roughness = [0.0, 0.15, 0.39, 1.45, 12.84, 24.41]
-
-    start_year = start_date.get('year')
-    lookback = start_date.advance(-1, 'year')
-
-    image = ee.Image('users/rogersckw9/vegetatiemonitor/yearly-classified-images/classified-image-2018')
-    # Convert image from classes to roughness
-    image = image.remap(class_values, class_roughness)
-
-    moisture_masks = wet_moist_masks(start_date, feature)
-    wet_mask = moisture_masks.select('wetMask')
-    moist_mask = moisture_masks.select('moistMask')
-
-    mech_dyn_list = ['Onbekend', 'Gering dynamisch', 'Matig/gering dynamisch', 'Sterk/matig dynamisch',
-                     'Sterk dynamisch']
-    ecotoop_mech_dyn = ecotop_features.remap(mech_dyn_list, [0, 1, 2, 3, 4], 'MECH_DYN')
-
-    mech_dyn_im = ee.Image().int().paint(ecotoop_mech_dyn, 'MECH_DYN')
-    weak_dynamics = mech_dyn_im.eq(0).Or(mech_dyn_im.eq(1))
-    moderate_dynamics = mech_dyn_im.eq(2)
-    bare_to_reed_mask = image.eq(0.15).multiply(wet_mask).multiply(weak_dynamics)
-    bare_to_willow_mask = image.eq(0.15).multiply(moist_mask).multiply(moderate_dynamics)
-    bare_grazing_im = bare_grazing_variables(ecotop_features, bare_to_reed_mask, bare_to_willow_mask)
-    assert bare_grazing_im.bandNames().getInfo() == ['bareToReedGrazing', 'bareToWillowGrazingA', 'bareToWillowGrazingB']
-
-def test_prepare_voorspel_data():
-
-    image = ee.Image('users/rogersckw9/vegetatiemonitor/yearly-classified-images/classified-image-2018')
-    ecotop_features = ee.FeatureCollection("users/gertjang/succession/ecotopen_cyclus_drie_rijntakken_utm31n")
-    grass_pct = ee.Number(0.1)
-    herb_pct = ee.Number(0.4)
-    willow_pct = ee.Number(0.1)
-    feature = ee.Feature(
-        ee.Geometry.Polygon(
-            [[[6.0115432966861135, 51.88332509634447],
-              [6.0286236036929495, 51.87898050435874],
-              [6.025705360284746, 51.88655677657944],
-              [6.011972450128496, 51.88660975300831]]]
-        )
-    )
-    start_date = ee.Date('2018-11-01')
-    years = 10
-
-    cumulative_images = prepare_voorspel_data(image,
-                                              ecotop_features,
-                                              grass_pct,
-                                              herb_pct,
-                                              willow_pct,
-                                              feature,
-                                              start_date,
-                                              years)
-
-    assert cumulative_images.size().getInfo() == years+1
-    first_image = ee.Image(cumulative_images.first())
-    assert first_image.bandNames().getInfo() == ['waterRoughness', 'bareRoughness', 'grassRoughness',
-                                 'herbaceousRoughness', 'forestRoughness', 'willowRoughness']
-
-    total_roughness = cumulative_images.map(calculate_total_roughness)
-    first_image = ee.Image(total_roughness.sort("system:time_start", False).first())
-    mean_roughness = ee.Number(first_image.reduceRegion(ee.Reducer.max(), feature.geometry(), 10).get('total_roughness')).round().getInfo()
-    assert mean_roughness == 2
