@@ -1,8 +1,8 @@
 import json
 import pytest
+import ee
 
 from . import main
-
 
 @pytest.fixture()
 def client():
@@ -130,34 +130,33 @@ def test_get_zonal_info_landuse(client):
       {
         "area_per_type": [
           {
-            "area": 2195869.233553539,
+            "area": 2070230.8170802696,
             "type": "1"
           },
           {
-            "area": 965375.9703986673,
+            "area": 688500.925067019,
             "type": "2"
           },
           {
-            "area": 2063152.831169577,
+            "area": 1475154.438426777,
             "type": "3"
           },
           {
-            "area": 778296.2523360907,
+            "area": 1238260.7638825062,
             "type": "4"
           },
           {
-            "area": 293278.7791819853,
+            "area": 410510.32361557905,
             "type": "5"
           },
           {
-            "area": 345519.912109375,
+            "area": 758932.494140625,
             "type": "6"
           }
         ],
         "id": 1
       }
     ]'''
-
 
     output_expected = sorted(json.loads(output_expected))
 
@@ -360,3 +359,54 @@ def test_get_zonal_timeseries_landuse(client):
     output = sorted(json.loads(s))
 
     assert len(output[0]["series"]) == 6
+
+def test_voorspel(client):
+    input = '''{
+        "region": {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                  "type": "Feature",
+                  "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                      [
+                        [
+                          5.869412857055636,
+                          51.97090473175753
+                        ],
+                        [
+                          5.888209777832003,
+                          51.96746759577021
+                        ],
+                        [
+                          5.895419555664034,
+                          51.978306898532956
+                        ],
+                        [
+                          5.884690719604464,
+                          51.98142601683456
+                        ],
+                        [
+                          5.869412857055636,
+                          51.97090473175753
+                        ]
+                      ]
+                    ]
+                  },
+                  "id": "0",
+                  "properties": {}
+                }
+            ]
+        }
+    }'''
+
+    r = client.post('/voorspel/', data=input,
+                    content_type='application/json')
+
+    assert r.status_code == 200
+    #
+    # s = r.get_data(as_text=True)
+    # output = sorted(json.loads(s))
+    # print(output)
+    # assert output[0]["series"][0]["data"][0] == 1.6977447813586202
