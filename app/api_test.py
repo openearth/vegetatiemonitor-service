@@ -40,7 +40,7 @@ def test_get_zonal_info_legger(client):
         "scale": 100
         }'''
 
-    r = client.post('/map/legger/zonal-info/', data=input,
+    r = client.post('/map/legger/zonal-info/daily/', data=input,
                     content_type='application/json')
 
     assert r.status_code == 200
@@ -87,7 +87,7 @@ def test_get_zonal_info_legger(client):
     assert output[0]["area_per_type"] == output_expected[0]["area_per_type"]
 
 
-def test_get_zonal_info_landuse(client):
+def test_get_zonal_info_landuse_daily(client):
     input = '''{
         "region": {
             "type": "FeatureCollection",
@@ -116,7 +116,7 @@ def test_get_zonal_info_landuse(client):
         "scale": 100
         }'''
 
-    r = client.post('/map/landuse/zonal-info/', data=input,
+    r = client.post('/map/landuse/zonal-info/daily/', data=input,
                     content_type='application/json')
 
     assert r.status_code == 200
@@ -157,6 +157,72 @@ def test_get_zonal_info_landuse(client):
         "id": 1
       }
     ]'''
+
+    output_expected = sorted(json.loads(output_expected))
+
+    assert output[0]["area_per_type"] == output_expected[0]["area_per_type"]
+
+def test_get_zonal_info_landuse_yearly(client):
+    input = '''{
+        "region": {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [5.846,51.984],
+                            [5.849,51.961],
+                            [5.910,51.960],
+                            [5.916,51.985],
+                            [5.877,51.990],
+                            [5.846,51.984]
+                        ]]
+                    },
+                    "properties": {
+                        "id": 1
+                    }
+                }
+            ]
+        },
+        "dateBegin":"2016-01-01",
+        "dateEnd":"2017-01-01",
+        "scale": 100
+        }'''
+
+    r = client.post('/map/landuse/zonal-info/yearly/', data=input,
+                    content_type='application/json')
+
+    assert r.status_code == 200
+
+    s = r.get_data(as_text=True)
+    open('test_output_zonal_landuse_yearly.json', 'w').write(s)
+
+    output = sorted(json.loads(s))
+
+    output_expected = '''[{
+        "area_per_type": [{
+            "area": 772665.3883118873,
+            "type": "1"
+        }, {
+            "area": 781310.6807100184,
+            "type": "2"
+        }, {
+            "area": 2228946.2171243103,
+            "type": "3"
+        }, {
+            "area": 1426625.1962354474,
+            "type": "4"
+        }, {
+            "area": 584609.772332644,
+            "type": "5"
+        }, {
+            "area": 178931.24853515625,
+            "type": "6"
+        }],
+        "id": 1
+    }]'''
 
     output_expected = sorted(json.loads(output_expected))
 
