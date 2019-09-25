@@ -128,7 +128,7 @@ def get_mostly_clean_images(images, g, options=None):
         if 'cloud_frequency_threshold_delta' in options:
             cloud_frequency_threshold_delta = options['cloud_frequency_threshold_delta']
 
-    cloud_frequency = 0.74 # Calculated for the Netherlands, hardcoded for speed
+    cloud_frequency = 0.74  # Calculated for the Netherlands, hardcoded for speed
 
     cloud_frequency = ee.Number(cloud_frequency).subtract(0.15).max(0.0)
     if cloud_frequency_threshold_delta:
@@ -459,25 +459,28 @@ def _get_zonal_info(features, image, scale):
     return features.toList(5000).map(get_feature_info)
 
 
-def get_zonal_info_landuse(region, date_begin, date_end, scale):
+def get_zonal_info_landuse(region, date_begin, date_end, scale, interval):
     features = ee.FeatureCollection(region["features"])
-
-    image = _get_landuse(features.geometry(), date_begin, date_end)
+    if interval == 'day':
+        image = _get_landuse(features.geometry(), date_begin, date_end)
+    else:
+        images = get_image_collection(yearly_collections['landuse'], features.geometry(), date_begin, date_end)
+        image = ee.Image(images.first())
 
     info = _get_zonal_info(features, image, scale)
 
     return info.getInfo()
 
 
-def get_zonal_info_landuse_vs_legger(region, date_begin, date_end, scale):
+def get_zonal_info_landuse_vs_legger(region, date_begin, date_end, scale, interval):
     pass
 
 
-def get_zonal_info_ndvi(region, date_begin, date_end, scale):
+def get_zonal_info_ndvi(region, date_begin, date_end, scale, interval):
     pass
 
 
-def get_zonal_info_legger(region, date_begin, date_end, scale):
+def get_zonal_info_legger(region, date_begin, date_end, scale, interval):
     features = ee.FeatureCollection(region["features"])
 
     image = _get_legger_image()
@@ -656,6 +659,8 @@ zonal_timeseries = {
 
 modes = ['daily', 'yearly']
 
+intervals = ['day', 'year']
+
 maps_modes = {
     'satellite':{
         'daily': get_satellite_images,
@@ -779,6 +784,15 @@ def get_map_zonal_info(id):
 
     json = request.get_json()
 
+    if 'dateInterval' in json:
+        interval = json['dateInterval']
+    else:
+        interval = 'day'
+
+    if interval not in intervals:
+        return 'Error: dateInterval {0} is not supported, only day or year available' \
+            .format(interval)
+
     region = json['region']
 
     date_begin = None
@@ -792,7 +806,7 @@ def get_map_zonal_info(id):
 
     scale = json['scale']
 
-    info = zonal_info[id](region, date_begin, date_end, scale)
+    info = zonal_info[id](region, date_begin, date_end, scale, interval)
 
     return jsonify(info)
 
@@ -839,18 +853,19 @@ def get_map_times(id, mode):
 
     region = json['region']
 
+    if mode not in modes:
+        return 'Error: only daily and yearly modes can be requested'
+
     if mode == 'daily':
         if not maps_modes[id][mode]:
             return 'Error: functionality for {0} {1} not implemented'.format(mode, id)
         date_end = datetime.today()
         date_begin = date_end - timedelta(days=365)
-    elif mode == 'yearly':
+    else:
         if not maps_modes[id][mode] and not yearly_collections[id]:
             return 'Error: functionality for {0} {1} not implemented'.format(mode, id)
         date_begin = datetime(2000, 1, 1, 0, 0, 0)
         date_end = datetime(2019, 1, 1, 0, 0, 0)
-    else:
-        return 'Error: only daily and yearly modes can be requested'
 
     date_begin = date_begin or ee.Date(date_begin)
     date_end = date_end or ee.Date(date_end)
@@ -869,7 +884,7 @@ def get_map_times(id, mode):
                 "dateFormat": 'YYYY-MM-DD',
                 "type": "instance"
             })
-    elif mode == 'yearly':
+    else:
         images = maps_modes[id][mode](yearly_collections[id], region, date_begin, date_end)
         image_times = ee.List(images.aggregate_array('system:time_start')) \
             .map(to_date_time_string).getInfo()
@@ -884,8 +899,6 @@ def get_map_times(id, mode):
                 "dateFormat": 'YYYY-MM-DD',
                 "type": "interval"
             })
-    else:
-        return 'Error: only daily and yearly modes can be requested'
 
     return jsonify(image_info_list)
 
