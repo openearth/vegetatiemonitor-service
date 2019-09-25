@@ -12,3 +12,10 @@ resources:
   cpu: .5
   memory_gb: 0.9
   disk_size_gb: 10
+
+handlers:
+- url: /.*
+  script: auto
+  secure: always
+  redirect_http_response_code: 301
+
