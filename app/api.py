@@ -459,9 +459,9 @@ def _get_zonal_info(features, image, scale):
     return features.toList(5000).map(get_feature_info)
 
 
-def get_zonal_info_landuse(region, date_begin, date_end, scale, mode):
+def get_zonal_info_landuse(region, date_begin, date_end, scale, interval):
     features = ee.FeatureCollection(region["features"])
-    if mode == 'daily':
+    if interval == 'day':
         image = _get_landuse(features.geometry(), date_begin, date_end)
     else:
         images = get_image_collection(yearly_collections['landuse'], features.geometry(), date_begin, date_end)
@@ -472,15 +472,15 @@ def get_zonal_info_landuse(region, date_begin, date_end, scale, mode):
     return info.getInfo()
 
 
-def get_zonal_info_landuse_vs_legger(region, date_begin, date_end, scale, mode):
+def get_zonal_info_landuse_vs_legger(region, date_begin, date_end, scale, interval):
     pass
 
 
-def get_zonal_info_ndvi(region, date_begin, date_end, scale, mode):
+def get_zonal_info_ndvi(region, date_begin, date_end, scale, interval):
     pass
 
 
-def get_zonal_info_legger(region, date_begin, date_end, scale, mode):
+def get_zonal_info_legger(region, date_begin, date_end, scale, interval):
     features = ee.FeatureCollection(region["features"])
 
     image = _get_legger_image()
@@ -659,6 +659,8 @@ zonal_timeseries = {
 
 modes = ['daily', 'yearly']
 
+intervals = ['day', 'year']
+
 maps_modes = {
     'satellite':{
         'daily': get_satellite_images,
@@ -769,9 +771,9 @@ def get_map(id):
     return jsonify(results)
 
 
-@app.route('/map/<string:id>/zonal-info/<string:mode>/', methods=['POST'])
+@app.route('/map/<string:id>/zonal-info/', methods=['POST'])
 @flask_cors.cross_origin()
-def get_map_zonal_info(id, mode):
+def get_map_zonal_info(id):
     """
     Returns zonal statistics per input feature (region)
     """
@@ -779,10 +781,17 @@ def get_map_zonal_info(id, mode):
     if id not in ['landuse', 'ndvi', 'landuse-vs-legger', 'legger']:
         return 'Error: zonal statistics for {0} is not supported yet' \
             .format(id)
-    if mode not in modes:
-        return 'Error: only daily and yearly modes can be requested'
 
     json = request.get_json()
+
+    if 'dateInterval' in json:
+        interval = json['dateInterval']
+    else:
+        interval = 'day'
+
+    if interval not in intervals:
+        return 'Error: dateInterval {0} is not supported, only day or year available' \
+            .format(interval)
 
     region = json['region']
 
@@ -797,7 +806,7 @@ def get_map_zonal_info(id, mode):
 
     scale = json['scale']
 
-    info = zonal_info[id](region, date_begin, date_end, scale, mode)
+    info = zonal_info[id](region, date_begin, date_end, scale, interval)
 
     return jsonify(info)
 

@@ -40,7 +40,7 @@ def test_get_zonal_info_legger(client):
         "scale": 100
         }'''
 
-    r = client.post('/map/legger/zonal-info/daily/', data=input,
+    r = client.post('/map/legger/zonal-info/', data=input,
                     content_type='application/json')
 
     assert r.status_code == 200
@@ -113,10 +113,11 @@ def test_get_zonal_info_landuse_daily(client):
         },
         "dateBegin":"2016-07-20",
         "dateEnd":"2016-07-21",
+        "dateInterval":"day",
         "scale": 100
         }'''
 
-    r = client.post('/map/landuse/zonal-info/daily/', data=input,
+    r = client.post('/map/landuse/zonal-info/', data=input,
                     content_type='application/json')
 
     assert r.status_code == 200
@@ -188,10 +189,11 @@ def test_get_zonal_info_landuse_yearly(client):
         },
         "dateBegin":"2016-01-01",
         "dateEnd":"2017-01-01",
+        "dateInterval":"year",
         "scale": 100
         }'''
 
-    r = client.post('/map/landuse/zonal-info/yearly/', data=input,
+    r = client.post('/map/landuse/zonal-info/', data=input,
                     content_type='application/json')
 
     assert r.status_code == 200
