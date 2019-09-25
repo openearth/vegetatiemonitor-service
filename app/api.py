@@ -463,11 +463,9 @@ def get_zonal_info_landuse(region, date_begin, date_end, scale, mode):
     features = ee.FeatureCollection(region["features"])
     if mode == 'daily':
         image = _get_landuse(features.geometry(), date_begin, date_end)
-    elif mode == 'yearly':
+    else:
         images = get_image_collection(yearly_collections['landuse'], features.geometry(), date_begin, date_end)
         image = ee.Image(images.first())
-    else:
-        return 'Error: only daily and yearly modes can be requested'
 
     info = _get_zonal_info(features, image, scale)
 
