@@ -83,6 +83,7 @@ def get_satellite_images(region, date_begin, date_end, cloud_filtering):
 
     return images
 
+
 def get_image_collection(collection, region, date_begin, date_end):
     images = ee.ImageCollection(collection) \
         .filterBounds(region)
@@ -94,6 +95,7 @@ def get_image_collection(collection, region, date_begin, date_end):
         images = images.filterDate(date_begin, date_end)
 
     return images
+
 
 def add_quality_score(images, g, score_percentile, scale):
     """
@@ -113,6 +115,7 @@ def add_quality_score(images, g, score_percentile, scale):
         return i.set('quality_score', score)
 
     return images.map(cloud_score)
+
 
 def get_mostly_clean_images(images, g, options=None):
     geometry = ee.Geometry(g)
@@ -505,6 +508,7 @@ yearly_collections = {
     'legger': 'users/rogersckw9/ecotoop/ecotoop-maps-6-class'
 }
 
+
 def _get_zonal_timeseries(features, images, scale):
     images = ee.ImageCollection(images)
     image_times = ee.List(images.aggregate_array('system:time_start')) \
@@ -598,12 +602,13 @@ legend_remap = {
     }
 }
 
+
 def get_zonal_timeseries_landuse(region, date_begin, date_end, scale):
     features = ee.FeatureCollection(region["features"])
     # Add empty image for 2012
     empty = ee.Image().set("system:time_start", ee.Date("2012-06-01").millis()).rename("remapped")
     collection = yearly_collections["landuse"]
-    images = get_image_collection(collection, features.geometry(), date_begin, date_end)\
+    images = get_image_collection(collection, features.geometry(), date_begin, date_end) \
         .merge(ee.ImageCollection([empty])).sort("system:time_start")
     features = ee.FeatureCollection(region["features"])
 
@@ -619,7 +624,8 @@ def get_zonal_timeseries_landuse(region, date_begin, date_end, scale):
             "series": []
         })
         for j in range(1, 7, 1):
-            timeseries[i]["series"].append({"name": legend_remap[str(j)]["name"], "type": "line", "data": [], "color": legend_remap[str(j)]["color"]})
+            timeseries[i]["series"].append({"name": legend_remap[str(j)]["name"], "type": "line", "data": [],
+                                            "color": legend_remap[str(j)]["color"]})
 
         timeseries[i]["xAxis"] = {
             "data": feature_data["times"]
@@ -650,6 +656,7 @@ def get_zonal_timeseries_ndvi(region, date_begin, date_end, scale):
 def get_zonal_timeseries_legger(region, date_begin, date_end, scale):
     pass
 
+
 zonal_timeseries = {
     'landuse': get_zonal_timeseries_landuse,
     'landuse-vs-legger': get_zonal_timeseries_landuse_vs_legger,
@@ -661,28 +668,6 @@ modes = ['daily', 'yearly']
 
 intervals = ['day', 'year']
 
-maps_modes = {
-    'satellite':{
-        'daily': get_satellite_images,
-        'yearly': get_image_collection
-    },
-    'ndvi':{
-        'daily': get_satellite_images,
-        'yearly': get_image_collection
-    },
-    'landuse': {
-        'daily': get_satellite_images,
-        'yearly': get_image_collection
-    },
-    'landuse-vs-legger': {
-        'daily': get_satellite_images,
-        'yearly': ''
-    },
-    'legger': {
-        'daily': '',
-        'yearly': ''
-    }
-}
 
 def get_image_url(image):
     map_id = image.getMapId()
@@ -732,7 +717,7 @@ def export_map(id):
 
     url = image.getDownloadURL({
         "format": format,
-        "name": id+"_"+date_begin+"_"+date_end,
+        "name": id + "_" + date_begin + "_" + date_end,
         "scale": scale,
         "region": json.dumps(region)})
 
@@ -842,6 +827,56 @@ def get_map_zonal_timeseries(id):
     return jsonify(info)
 
 
+def _get_map_times_daily(id, region):
+    date_end = datetime.today()
+    date_begin = date_end - timedelta(days=365)
+
+    images = get_satellite_images(region, date_begin, date_end, True)
+
+    image_times = ee.List(images.aggregate_array('system:time_start')) \
+        .map(to_date_time_string).getInfo()
+
+    image_times = map(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M'), image_times)
+    image_dates = list(sorted(set(map(lambda x: x.strftime('%Y-%m-%d'), image_times))))
+
+    image_info_list = []
+
+    for time in image_dates:
+        image_info_list.append({
+            "date": time,
+            "dateFormat": 'YYYY-MM-DD',
+            "type": "instance"
+        })
+
+    return image_info_list
+
+
+def _get_map_times_yearly(id, region):
+    date_begin = datetime(2000, 1, 1, 0, 0, 0)
+    date_end = datetime(2019, 1, 1, 0, 0, 0)
+
+    images = get_image_collection(yearly_collections[id], region, date_begin, date_end)
+
+    image_times = ee.List(images.aggregate_array('system:time_start')) \
+        .map(to_date_time_string).getInfo()
+
+    image_times = map(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M'), image_times)
+
+    image_start_dates = list(map(lambda t: datetime(t.year, 1, 1), image_times))
+    image_end_dates = list(map(lambda t: datetime(t.year + 1, 1, 1), image_start_dates))
+
+    image_info_list = []
+    for start, end in zip(image_start_dates, image_end_dates):
+        image_info_list.append({
+            "dateStart": start.strftime('%Y-%m-%d'),
+            "dateEnd": end.strftime('%Y-%m-%d'),
+            "dateFormat": 'YYYY-MM-DD',
+            "type": "interval"
+        })
+
+    return image_info_list
+
+
 @app.route('/map/<string:id>/times/<string:mode>', methods=['POST'])
 @flask_cors.cross_origin()
 def get_map_times(id, mode):
@@ -856,51 +891,13 @@ def get_map_times(id, mode):
     if mode not in modes:
         return 'Error: only daily and yearly modes can be requested'
 
+    dates = []
     if mode == 'daily':
-        if not maps_modes[id][mode]:
-            return 'Error: functionality for {0} {1} not implemented'.format(mode, id)
-        date_end = datetime.today()
-        date_begin = date_end - timedelta(days=365)
+        dates = _get_map_times_daily(id, region)
     else:
-        if not maps_modes[id][mode] and not yearly_collections[id]:
-            return 'Error: functionality for {0} {1} not implemented'.format(mode, id)
-        date_begin = datetime(2000, 1, 1, 0, 0, 0)
-        date_end = datetime(2019, 1, 1, 0, 0, 0)
+        dates = _get_map_times_yearly(id, region)
 
-    date_begin = date_begin or ee.Date(date_begin)
-    date_end = date_end or ee.Date(date_end)
-
-    if mode == 'daily':
-        images = maps_modes[id][mode](region, date_begin, date_end, True)
-        image_times = ee.List(images.aggregate_array('system:time_start')) \
-            .map(to_date_time_string).getInfo()
-        image_times = map(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M'), image_times)
-        image_dates = list(sorted(set(map(lambda x: x.strftime('%Y-%m-%d'), image_times))))
-
-        image_info_list = []
-        for time in image_dates:
-            image_info_list.append({
-                "date": time,
-                "dateFormat": 'YYYY-MM-DD',
-                "type": "instance"
-            })
-    else:
-        images = maps_modes[id][mode](yearly_collections[id], region, date_begin, date_end)
-        image_times = ee.List(images.aggregate_array('system:time_start')) \
-            .map(to_date_time_string).getInfo()
-        image_times = map(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M'), image_times)
-        image_start_dates = list(map(lambda t: datetime(t.year, 1, 1), image_times))
-        image_end_dates = list(map(lambda t: datetime(t.year+1, 1, 1), image_start_dates))
-        image_info_list = []
-        for start, end in zip(image_start_dates, image_end_dates):
-            image_info_list.append({
-                "dateStart": start.strftime('%Y-%m-%d'),
-                "dateEnd": end.strftime('%Y-%m-%d'),
-                "dateFormat": 'YYYY-MM-DD',
-                "type": "interval"
-            })
-
-    return jsonify(image_info_list)
+    return jsonify(dates)
 
 
 def wet_moist_masks(start_date, feature):
@@ -948,10 +945,10 @@ def bare_grazing_variables(ecotop_map, bare_to_reed_mask, bare_to_willow_mask):
     """
     management_code = 'BEHEER'
     management_list = ['Onbekend', 'Nauwelijks tot geen beheer', 'Nauwelijks tot geen/extensief beheer',
-    'Extensief beheer', 'Intensief beheer', 'Kunstmatig hard substraat', 'Water']
+                       'Extensief beheer', 'Intensief beheer', 'Kunstmatig hard substraat', 'Water']
     reed_grazing = [0, 100, 100, 100, 70, 0, 0]
     willow_grazing_a = [0, 50, 50, 230, 280, 0, 0]
-    willow_grazing_b =  [0, 57, 57, 57, 60, 0, 0]
+    willow_grazing_b = [0, 57, 57, 57, 60, 0, 0]
 
     reed_grazing = ecotop_map.remap(management_list, reed_grazing, management_code)
     willow_grazing_a = ecotop_map.remap(management_list, willow_grazing_a, management_code)
@@ -959,9 +956,10 @@ def bare_grazing_variables(ecotop_map, bare_to_reed_mask, bare_to_willow_mask):
 
     reed_grazing_image = ee.Image().int().paint(reed_grazing, management_code).divide(100)
     willow_grazing_a_image = ee.Image().int().paint(willow_grazing_a, management_code).multiply(bare_to_willow_mask)
-    willow_grazing_b_image = ee.Image().int().paint(willow_grazing_b, management_code).divide(100).updateMask(bare_to_willow_mask)
+    willow_grazing_b_image = ee.Image().int().paint(willow_grazing_b, management_code).divide(100).updateMask(
+        bare_to_willow_mask)
 
-    return reed_grazing_image.addBands(willow_grazing_a_image).addBands(willow_grazing_b_image)\
+    return reed_grazing_image.addBands(willow_grazing_a_image).addBands(willow_grazing_b_image) \
         .rename(['bareToReedGrazing', 'bareToWillowGrazingA', 'bareToWillowGrazingB'])
 
 
@@ -1040,7 +1038,8 @@ def prepare_voorspel_data(image, ecotop_features, grass_pct, herb_pct, willow_pc
     moist_mask = moisture_masks.select('moistMask')
 
     # Mechanical dynamics from ecotoop layers
-    mech_dyn_list = ['Onbekend', 'Gering dynamisch', 'Matig/gering dynamisch', 'Sterk/matig dynamisch', 'Sterk dynamisch']
+    mech_dyn_list = ['Onbekend', 'Gering dynamisch', 'Matig/gering dynamisch', 'Sterk/matig dynamisch',
+                     'Sterk dynamisch']
     ecotoop_mech_dyn = ecotop_features.remap(mech_dyn_list, [0, 1, 2, 3, 4], 'MECH_DYN')
 
     mech_dyn_im = ee.Image().int().paint(ecotoop_mech_dyn, 'MECH_DYN')
@@ -1118,7 +1117,6 @@ def prepare_voorspel_data(image, ecotop_features, grass_pct, herb_pct, willow_pc
         # return ee.ImageCollection(prev_im).merge(ee.ImageCollection([image_now]))
         return ee.List(prev).add(image_now)
 
-
     year_array = ee.List.sequence(1, years, 1)
     # Create an ImageCollection of images by iterating.
     # blank_collection = ee.ImageCollection([first_roughness_image])
@@ -1145,7 +1143,6 @@ def calculate_total_roughness(image):
 
 
 def merge_roughness_regions(classified_image, images_shoreline, images_terrestrial, image_no_succession):
-
     def combine_images(i):
         image1 = ee.Image(i).unmask()
         image2 = ee.Image(images_terrestrial.filterDate(image1.get('system:time_start')).first()).unmask()
@@ -1200,7 +1197,7 @@ def predict_roughness(region, start_date, num_years):
     classified_image = ee.Image(classified_images.filterDate(
         ee.Date.fromYMD(start_year, 1, 1),
         ee.Date.fromYMD(start_year, 12, 31)).first()
-    )
+                                )
     roughness_image = classified_image.remap([1, 2, 3, 4, 5, 6], [0.0, 0.15, 0.39, 1.45, 12.84, 24.41]).rename(
         "predicted")
     classified_image_shore = classified_image.updateMask(shoreline)
@@ -1217,13 +1214,13 @@ def predict_roughness(region, start_date, num_years):
     willow_to_forest = ee.Number(0.1)
 
     cumulative_shore = prepare_voorspel_data(classified_image_shore,
-                                    ecotop_features,
-                                    grass_to_herb,
-                                    herb_to_willow,
-                                    willow_to_forest,
-                                    feature,
-                                    start_date,
-                                    num_years)
+                                             ecotop_features,
+                                             grass_to_herb,
+                                             herb_to_willow,
+                                             willow_to_forest,
+                                             feature,
+                                             start_date,
+                                             num_years)
 
     # Terrestrial Evolution Rates
     # 10% grass will change into herb in 10 yr (same as shoreline)
@@ -1234,15 +1231,16 @@ def predict_roughness(region, start_date, num_years):
     # Forrest remains forest
 
     cumulative_terrestrial = prepare_voorspel_data(classified_image_terrestrial,
-                                          ecotop_features,
-                                          grass_to_herb,
-                                          herb_to_willow,
-                                          willow_to_forest,
-                                          feature,
-                                          start_date,
-                                          num_years)
+                                                   ecotop_features,
+                                                   grass_to_herb,
+                                                   herb_to_willow,
+                                                   willow_to_forest,
+                                                   feature,
+                                                   start_date,
+                                                   num_years)
 
-    total_roughness_images = merge_roughness_regions(classified_image, cumulative_shore, cumulative_terrestrial, roughness_no_succession)
+    total_roughness_images = merge_roughness_regions(classified_image, cumulative_shore, cumulative_terrestrial,
+                                                     roughness_no_succession)
     return total_roughness_images
 
 
@@ -1274,14 +1272,15 @@ def get_roughness_info(prediction_images):
     image_collection = image_collection.map(add_date)
     image_collection = image_collection.map(class_to_roughness)
 
-    merged_collection = image_collection.merge(prediction_images)#.merge(ecotopen_rough)
+    merged_collection = image_collection.merge(prediction_images)  # .merge(ecotopen_rough)
 
     return merged_collection
+
 
 def get_voorspel_timeseries(region, collection, scale):
     feature = ee.FeatureCollection(region["features"]).first()
     geom = feature.geometry()
-    times = ee.List(collection.aggregate_array('system:time_start'))\
+    times = ee.List(collection.aggregate_array('system:time_start')) \
         .map(to_date_time_string).getInfo()
 
     reducer = ee.Reducer.mean()

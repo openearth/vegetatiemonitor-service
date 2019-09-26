@@ -1,8 +1,10 @@
 import json
+import os
+import random
 import pytest
-import ee
 
 from . import main
+
 
 @pytest.fixture()
 def client():
@@ -11,6 +13,18 @@ def client():
     main.app.testing = True
 
     return main.app.test_client()
+
+
+def write_test_output(filename, s):
+    dirname = '../output/test/'
+
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+
+    path = os.path.join(dirname, filename)
+
+    with open(path, 'w') as f:
+        f.write(s)
 
 
 def test_get_zonal_info_legger(client):
@@ -46,7 +60,7 @@ def test_get_zonal_info_legger(client):
     assert r.status_code == 200
 
     s = r.get_data(as_text=True)
-    open('test_output_zonal_legger.json', 'w').write(s)
+    write_test_output('test_output_zonal_legger.json', s)
 
     output = sorted(json.loads(s))
 
@@ -123,7 +137,7 @@ def test_get_zonal_info_landuse_daily(client):
     assert r.status_code == 200
 
     s = r.get_data(as_text=True)
-    open('test_output_zonal_landuse.json', 'w').write(s)
+    write_test_output('test_output_zonal_landuse.json', s)
 
     output = sorted(json.loads(s))
 
@@ -163,6 +177,7 @@ def test_get_zonal_info_landuse_daily(client):
 
     assert output[0]["area_per_type"] == output_expected[0]["area_per_type"]
 
+
 def test_get_zonal_info_landuse_yearly(client):
     input = '''{
         "region": {
@@ -199,7 +214,7 @@ def test_get_zonal_info_landuse_yearly(client):
     assert r.status_code == 200
 
     s = r.get_data(as_text=True)
-    open('test_output_zonal_landuse_yearly.json', 'w').write(s)
+    write_test_output('test_output_zonal_landuse_yearly.json', s)
 
     output = sorted(json.loads(s))
 
@@ -255,7 +270,7 @@ def test_get_map_landuse(client):
 
     output = json.loads(r.get_data(as_text=True))
 
-    open('test_output_landuse.json', 'w').write(r.get_data(as_text=True))
+    write_test_output('test_output_landuse.json', r.get_data(as_text=True))
 
     # https://earthengine.googleapis.com/map/ee6293d9845774ab8ae9c34b72b6d739/{z}/{x}/{y}?token=ec331d0b872fb8b60e1be59da49d3600
     assert 'https://earthengine.googleapis.com/map/' in output['url']
@@ -286,8 +301,7 @@ def test_export_landuse(client):
 
     output = json.loads(r.get_data(as_text=True))
 
-    open('test_output_export_landuse.json', 'w').write(
-        r.get_data(as_text=True))
+    write_test_output('test_output_export_landuse.json', r.get_data(as_text=True))
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
@@ -317,7 +331,7 @@ def test_export_ndvi(client):
 
     output = json.loads(r.get_data(as_text=True))
 
-    open('test_output_export_ndvi.json', 'w').write(r.get_data(as_text=True))
+    write_test_output('test_output_export_ndvi.json', r.get_data(as_text=True))
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
@@ -347,8 +361,7 @@ def test_export_landuse_vs_legger(client):
 
     output = json.loads(r.get_data(as_text=True))
 
-    open('test_output_export_landuse_vs_legger.json', 'w').write(
-        r.get_data(as_text=True))
+    write_test_output('test_output_export_landuse_vs_legger.json', r.get_data(as_text=True))
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
@@ -383,11 +396,65 @@ def test_export_satellite_image(client):
 
     output = json.loads(r.get_data(as_text=True))
 
-    open('test_output_export_satellite.json', 'w').write(
-        r.get_data(as_text=True))
+    write_test_output('test_output_export_satellite.json', r.get_data(as_text=True))
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
+
+
+def test_get_times(client):
+    input = '''{
+        "region": {
+            "coordinates": [
+              [
+                [
+                  5.84,
+                  51.984
+                ],
+                [
+                  5.849,
+                  51.961
+                ],
+                [
+                  5.91,
+                  51.96
+                ],
+                [
+                  5.916,
+                  51.985
+                ],
+                [
+                  5.877,
+                  51.99
+                ],
+                [
+                  5.846,
+                  51.984
+                ]
+              ]
+            ],
+            "geodesic": true,
+            "type": "Polygon"
+          }
+        }'''
+
+    # randomize coordinate to skip EE caching
+    body = json.loads(input)
+    body['region']['coordinates'][0][0][0] += random.random() / 10
+    input = json.dumps(body)
+
+    print(input)
+
+    r = client.post('/map/satellite/times/daily', data=input,
+                    content_type='application/json')
+
+    assert r.status_code == 200
+
+    s = r.get_data(as_text=True)
+    write_test_output('test_output_satellite_times_daily.json', s)
+
+    assert r.status_code == 200
+
 
 def test_get_zonal_timeseries_landuse(client):
     input = '''{
@@ -422,11 +489,12 @@ def test_get_zonal_timeseries_landuse(client):
     assert r.status_code == 200
 
     s = r.get_data(as_text=True)
-    # open('test_output_zonal_timeseries_landuse.json', 'w').write(s)
+    # write_test_output('test_output_zonal_timeseries_landuse.json', s)
 
     output = sorted(json.loads(s))
 
     assert len(output[0]["series"]) == 6
+
 
 def test_voorspel(client):
     input = '''{
