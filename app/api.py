@@ -75,9 +75,11 @@ def get_satellite_images(region, date_begin, date_end, cloud_filtering):
             date_end = date_begin.advance(1, 'day')
 
         images = images.filterDate(date_begin, date_end)
+
     filter_options = {
         'score_percentile': 95
     }
+
     if cloud_filtering:
         images = get_mostly_clean_images(images, region, options=filter_options)
 
@@ -119,7 +121,7 @@ def add_quality_score(images, g, score_percentile, scale):
 
 def get_mostly_clean_images(images, g, options=None):
     geometry = ee.Geometry(g)
-    scale = 500
+    scale = 2000
     score_percentile = 85
     cloud_frequency_threshold_delta = None
 
@@ -133,7 +135,8 @@ def get_mostly_clean_images(images, g, options=None):
 
     cloud_frequency = 0.74  # Calculated for the Netherlands, hardcoded for speed
 
-    cloud_frequency = ee.Number(cloud_frequency).subtract(0.15).max(0.0)
+    cloud_frequency = ee.Number(cloud_frequency)
+
     if cloud_frequency_threshold_delta:
         cloud_frequency = cloud_frequency.add(cloud_frequency_threshold_delta)
 
@@ -141,7 +144,8 @@ def get_mostly_clean_images(images, g, options=None):
 
     images = add_quality_score(images, geometry, score_percentile, scale)
 
-    images = images.sort('quality_score').limit(images.size().multiply(ee.Number(1).subtract(cloud_frequency)).toInt())
+    max_image_count = images.size().multiply(ee.Number(1).subtract(cloud_frequency)).toInt()
+    images = images.sort('quality_score').limit(max_image_count)
 
     return images
 
@@ -828,8 +832,15 @@ def get_map_zonal_timeseries(id):
 
 
 def _get_map_times_daily(id, region):
+    # take images for one year from now
     date_end = datetime.today()
     date_begin = date_end - timedelta(days=365)
+
+    # TODO: add Memcache
+
+    # filter bounds of a region
+    aoi = ee.FeatureCollection('users/gdonchyts/vegetation-monitor-aoi')  # TODO: move to Cindy's
+    region = ee.Geometry(region).intersection(aoi.geometry(), 500)
 
     images = get_satellite_images(region, date_begin, date_end, True)
 
@@ -891,7 +902,6 @@ def get_map_times(id, mode):
     if mode not in modes:
         return 'Error: only daily and yearly modes can be requested'
 
-    dates = []
     if mode == 'daily':
         dates = _get_map_times_daily(id, region)
     else:
