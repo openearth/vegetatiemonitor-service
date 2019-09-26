@@ -174,9 +174,7 @@ def visualize_image(image, vis):
 
 def get_satellite_image(region, date_begin, date_end, vis):
     images = get_satellite_images(region, date_begin, date_end, False)
-
     image = ee.Image(images.mosaic()).divide(10000)
-
     image = visualize_image(image, vis)
 
     return image
@@ -346,7 +344,7 @@ def get_landuse(region, date_begin, date_end, vis):
         .sldStyle(legger_style)
 
 
-def _get_landuse_vs_legger(date_begin, date_end, region):
+def _get_landuse_vs_legger(region, date_begin, date_end):
     legger = _get_legger_image()
     mask = legger.eq([1, 2, 3, 4, 5, 6]).reduce(ee.Reducer.anyNonZero())
     legger = legger.updateMask(mask)
@@ -357,7 +355,7 @@ def _get_landuse_vs_legger(date_begin, date_end, region):
 
 
 def get_landuse_vs_legger(region, date_begin, date_end, vis):
-    diff = _get_landuse_vs_legger(date_begin, date_end, region)
+    diff = _get_landuse_vs_legger(region, date_begin, date_end)
 
     # use RWS legger colors
     palette = ['1a9850', '91cf60', 'd9ef8b', 'ffffbf', 'fee08b', 'fc8d59',
@@ -395,20 +393,45 @@ maps = {
 }
 
 
-def export_satellite_image(region, date_begin, date_end, vis):
-    return get_satellite_image(region, date_begin, date_end, vis)
+def export_satellite_image(region, date_begin, date_end, vis, asset_type):
+    if asset_type == 'day':
+        image = get_satellite_image(region, date_begin, date_end, vis)
+    else:
+        images = get_image_collection(yearly_collections["satellite"], region, date_begin, date_end)
+        image = ee.Image(images.first())
+        image = visualize_image(image, vis)
+
+    return image
 
 
-def export_ndvi(region, date_begin, date_end, vis):
-    return _get_ndvi(date_begin, date_end, region)
+def export_ndvi(region, date_begin, date_end, vis, asset_type):
+    if asset_type == 'day':
+        image = _get_ndvi(date_begin, date_end, region)
+    else:
+        images = get_image_collection(yearly_collections["satellite"], region, date_begin, date_end)
+        image = ee.Image(images.first())
+
+    return image
 
 
-def export_landuse(region, date_begin, date_end, vis):
-    return _get_landuse(region, date_begin, date_end)
+def export_landuse(region, date_begin, date_end, vis, asset_type):
+    if asset_type == 'day':
+        image = _get_landuse(region, date_begin, date_end)
+    else:
+        images = get_image_collection(yearly_collections["landuse"], region, date_begin, date_end)
+        image = ee.Image(images.first())
+
+    return image
 
 
-def export_landuse_vs_legger(region, date_begin, date_end, vis):
-    return _get_landuse_vs_legger(date_begin, date_end, region)
+def export_landuse_vs_legger(region, date_begin, date_end, vis, asset_type):
+    if asset_type == 'day':
+        image = _get_landuse_vs_legger(region, date_begin, date_end)
+    else:
+        images = get_image_collection(yearly_collections["landuse_vs_legger"], region, date_begin, date_end)
+        image = ee.Image(images.first())
+
+    return image
 
 
 exports = {
@@ -459,9 +482,9 @@ def _get_zonal_info(features, image, scale):
     return features.toList(5000).map(get_feature_info)
 
 
-def get_zonal_info_landuse(region, date_begin, date_end, scale, interval):
+def get_zonal_info_landuse(region, date_begin, date_end, scale, asset_type):
     features = ee.FeatureCollection(region["features"])
-    if interval == 'day':
+    if asset_type == 'day':
         image = _get_landuse(features.geometry(), date_begin, date_end)
     else:
         images = get_image_collection(yearly_collections['landuse'], features.geometry(), date_begin, date_end)
@@ -472,15 +495,15 @@ def get_zonal_info_landuse(region, date_begin, date_end, scale, interval):
     return info.getInfo()
 
 
-def get_zonal_info_landuse_vs_legger(region, date_begin, date_end, scale, interval):
+def get_zonal_info_landuse_vs_legger(region, date_begin, date_end, scale, asset_type):
     pass
 
 
-def get_zonal_info_ndvi(region, date_begin, date_end, scale, interval):
+def get_zonal_info_ndvi(region, date_begin, date_end, scale, asset_type):
     pass
 
 
-def get_zonal_info_legger(region, date_begin, date_end, scale, interval):
+def get_zonal_info_legger(region, date_begin, date_end, scale, asset_type):
     features = ee.FeatureCollection(region["features"])
 
     image = _get_legger_image()
@@ -501,8 +524,7 @@ yearly_collections = {
     'satellite': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
     'ndvi': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
     'landuse': 'users/rogersckw9/vegetatiemonitor/yearly-classified-images',
-    'landuse-vs-legger': 'users/rogersckw9/vegetatiemonitor/classificatie-vs-legger',
-    'legger': 'users/rogersckw9/ecotoop/ecotoop-maps-6-class'
+    'landuse-vs-legger': 'users/rogersckw9/vegetatiemonitor/classificatie-vs-legger'
 }
 
 def _get_zonal_timeseries(features, images, scale):
@@ -659,7 +681,7 @@ zonal_timeseries = {
 
 modes = ['daily', 'yearly']
 
-intervals = ['day', 'year']
+asset_types = ['day', 'year']
 
 maps_modes = {
     'satellite':{
@@ -708,6 +730,15 @@ def export_map(id):
 
     region = j['region']
 
+    if 'assetType' in j:
+        asset_type = j['assetType']
+    else:
+        asset_type = 'day'
+
+    if asset_type not in asset_types:
+        return 'Error: assetType {0} is not supported, only day or year available' \
+            .format(asset_type)
+
     date_begin = j['dateBegin']
     if 'dateEnd' not in j:
         date_end = ee.Date(date_begin).advance(1, 'day')
@@ -724,7 +755,7 @@ def export_map(id):
     if 'scale' in j:
         scale = j['scale']
 
-    image = exports[id](region, date_begin, date_end, vis)
+    image = exports[id](region, date_begin, date_end, vis, asset_type)
 
     format = 'tif'
     if id == 'satellite':
@@ -784,14 +815,14 @@ def get_map_zonal_info(id):
 
     json = request.get_json()
 
-    if 'dateInterval' in json:
-        interval = json['dateInterval']
+    if 'assetType' in json:
+        asset_type = json['assetType']
     else:
-        interval = 'day'
+        asset_type = 'day'
 
-    if interval not in intervals:
-        return 'Error: dateInterval {0} is not supported, only day or year available' \
-            .format(interval)
+    if asset_type not in asset_types:
+        return 'Error: assetType {0} is not supported, only day or year available' \
+            .format(asset_type)
 
     region = json['region']
 
@@ -806,7 +837,7 @@ def get_map_zonal_info(id):
 
     scale = json['scale']
 
-    info = zonal_info[id](region, date_begin, date_end, scale, interval)
+    info = zonal_info[id](region, date_begin, date_end, scale, asset_type)
 
     return jsonify(info)
 
