@@ -439,37 +439,39 @@ def test_export_satellite_image(client):
 def test_get_times(client):
     input = '''{
         "region": {
-            "coordinates": [
+          "geodesic": false,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:3857"
+            }
+          },
+          "type": "Polygon",
+          "coordinates": [
+            [
               [
-                [
-                  5.84,
-                  51.984
-                ],
-                [
-                  5.849,
-                  51.961
-                ],
-                [
-                  5.91,
-                  51.96
-                ],
-                [
-                  5.916,
-                  51.985
-                ],
-                [
-                  5.877,
-                  51.99
-                ],
-                [
-                  5.846,
-                  51.984
-                ]
+                508764.86048223823,
+                6770486.217669737
+              ],
+              [
+                528332.7397234514,
+                6770486.217669737
+              ],
+              [
+                528332.7397234514,
+                6790054.09691095
+              ],
+              [
+                508764.86048223823,
+                6790054.09691095
+              ],
+              [
+                508764.86048223823,
+                6770486.217669737
               ]
-            ],
-            "geodesic": true,
-            "type": "Polygon"
-          }
+            ]
+          ]
+        }
         }'''
 
     # randomize coordinate to skip EE caching
@@ -477,15 +479,17 @@ def test_get_times(client):
     body['region']['coordinates'][0][0][0] += random.random() / 10
     input = json.dumps(body)
 
-    print(input)
-
     r = client.post('/map/satellite/times/daily', data=input,
                     content_type='application/json')
 
     assert r.status_code == 200
 
     s = r.get_data(as_text=True)
-    write_test_output('test_output_satellite_times_daily.json', s)
+
+    # write_test_output('test_output_satellite_times_daily.json', s)
+
+    times = json.loads(s)
+    print('times: ', len(times))
 
     assert r.status_code == 200
 
