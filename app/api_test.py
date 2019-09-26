@@ -1,8 +1,8 @@
 import json
 import pytest
+import ee
 
 from . import main
-
 
 @pytest.fixture()
 def client():
@@ -51,39 +51,35 @@ def test_get_zonal_info_legger(client):
     output = sorted(json.loads(s))
 
     output_expected = '''[
-        {
-           "id": 1,
-            "area_per_type": [
-              {
-                "area": 567062.7642463235,
-                "type": "0"
-              },
-              {
-                "area": 1624781.6086224725,
-                "type": "1"
-              },
-              {
-                "area": 252953.091796875,
-                "type": "2"
-              },
-              {
-                "area": 1854597.840469899,
-                "type": "3"
-              },
-              {
-                "area": 682186.362109375,
-                "type": "4"
-              },
-              {
-                "area": 382541.0576171875,
-                "type": "5"
-              },
-              {
-                "area": 104886.63330078125,
-                "type": "6"
-              }
-            ]
-        }
+      {
+        "area_per_type": [
+          {
+            "area": 1790886.72332644,
+            "type": "1"
+          },
+          {
+            "area": 455036.860223269,
+            "type": "2"
+          },
+          {
+            "area": 2252862.6694067856,
+            "type": "3"
+          },
+          {
+            "area": 650561.147265625,
+            "type": "4"
+          },
+          {
+            "area": 364032.44482421875,
+            "type": "5"
+          },
+          {
+            "area": 207065.13603515626,
+            "type": "6"
+          }
+        ],
+        "id": 1
+      }
     ]'''
 
     output_expected = sorted(json.loads(output_expected))
@@ -91,7 +87,7 @@ def test_get_zonal_info_legger(client):
     assert output[0]["area_per_type"] == output_expected[0]["area_per_type"]
 
 
-def test_get_zonal_info_landuse(client):
+def test_get_zonal_info_landuse_daily(client):
     input = '''{
         "region": {
             "type": "FeatureCollection",
@@ -117,6 +113,7 @@ def test_get_zonal_info_landuse(client):
         },
         "dateBegin":"2016-07-20",
         "dateEnd":"2016-07-21",
+        "dateInterval":"day",
         "scale": 100
         }'''
 
@@ -131,38 +128,103 @@ def test_get_zonal_info_landuse(client):
     output = sorted(json.loads(s))
 
     output_expected = '''[
+      {
+        "area_per_type": [
           {
-            "area_per_type": [
-              {
-                "area": 2193639.4108302696, 
-                "type": "1"
-              }, 
-              {
-                "area": 1002394.0534064798, 
-                "type": "2"
-              }, 
-              {
-                "area": 1919334.3929400274, 
-                "type": "3"
-              }, 
-              {
-                "area": 801042.7628006281, 
-                "type": "4"
-              }, 
-              {
-                "area": 240648.58447265625, 
-                "type": "5"
-              }, 
-              {
-                "area": 345520.400390625, 
-                "type": "6"
-              }
-            ], 
-            "id": 1
+            "area": 2070230.8170802696,
+            "type": "1"
+          },
+          {
+            "area": 688500.925067019,
+            "type": "2"
+          },
+          {
+            "area": 1475154.438426777,
+            "type": "3"
+          },
+          {
+            "area": 1238260.7638825062,
+            "type": "4"
+          },
+          {
+            "area": 410510.32361557905,
+            "type": "5"
+          },
+          {
+            "area": 758932.494140625,
+            "type": "6"
           }
-        ]
-        '''
+        ],
+        "id": 1
+      }
+    ]'''
 
+    output_expected = sorted(json.loads(output_expected))
+
+    assert output[0]["area_per_type"] == output_expected[0]["area_per_type"]
+
+def test_get_zonal_info_landuse_yearly(client):
+    input = '''{
+        "region": {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [5.846,51.984],
+                            [5.849,51.961],
+                            [5.910,51.960],
+                            [5.916,51.985],
+                            [5.877,51.990],
+                            [5.846,51.984]
+                        ]]
+                    },
+                    "properties": {
+                        "id": 1
+                    }
+                }
+            ]
+        },
+        "dateBegin":"2016-01-01",
+        "dateEnd":"2017-01-01",
+        "dateInterval":"year",
+        "scale": 100
+        }'''
+
+    r = client.post('/map/landuse/zonal-info/', data=input,
+                    content_type='application/json')
+
+    assert r.status_code == 200
+
+    s = r.get_data(as_text=True)
+    open('test_output_zonal_landuse_yearly.json', 'w').write(s)
+
+    output = sorted(json.loads(s))
+
+    output_expected = '''[{
+        "area_per_type": [{
+            "area": 772665.3883118873,
+            "type": "1"
+        }, {
+            "area": 781310.6807100184,
+            "type": "2"
+        }, {
+            "area": 2228946.2171243103,
+            "type": "3"
+        }, {
+            "area": 1426625.1962354474,
+            "type": "4"
+        }, {
+            "area": 584609.772332644,
+            "type": "5"
+        }, {
+            "area": 178931.24853515625,
+            "type": "6"
+        }],
+        "id": 1
+    }]'''
 
     output_expected = sorted(json.loads(output_expected))
 
@@ -326,3 +388,93 @@ def test_export_satellite_image(client):
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
+
+def test_get_zonal_timeseries_landuse(client):
+    input = '''{
+        "scale": 30,
+        "region": {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [5.846, 51.984],
+                            [5.849, 51.961],
+                            [5.910, 51.960],
+                            [5.916, 51.985],
+                            [5.877, 51.990],
+                            [5.846, 51.984]
+                        ]
+                    ]
+                },
+                "properties": {
+                    "id": 1
+                }
+            }]
+        }
+    }'''
+
+    r = client.post('/map/landuse/zonal-timeseries/', data=input,
+                    content_type='application/json')
+
+    assert r.status_code == 200
+
+    s = r.get_data(as_text=True)
+    # open('test_output_zonal_timeseries_landuse.json', 'w').write(s)
+
+    output = sorted(json.loads(s))
+
+    assert len(output[0]["series"]) == 6
+
+def test_voorspel(client):
+    input = '''{
+        "region": {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                  "type": "Feature",
+                  "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                      [
+                        [
+                          5.869412857055636,
+                          51.97090473175753
+                        ],
+                        [
+                          5.888209777832003,
+                          51.96746759577021
+                        ],
+                        [
+                          5.895419555664034,
+                          51.978306898532956
+                        ],
+                        [
+                          5.884690719604464,
+                          51.98142601683456
+                        ],
+                        [
+                          5.869412857055636,
+                          51.97090473175753
+                        ]
+                      ]
+                    ]
+                  },
+                  "id": "0",
+                  "properties": {}
+                }
+            ]
+        }
+    }'''
+
+    r = client.post('/voorspel/', data=input,
+                    content_type='application/json')
+
+    assert r.status_code == 200
+    #
+    # s = r.get_data(as_text=True)
+    # output = sorted(json.loads(s))
+    # print(output)
+    # assert output[0]["series"][0]["data"][0] == 1.6977447813586202
