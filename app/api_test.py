@@ -127,7 +127,7 @@ def test_get_zonal_info_landuse_daily(client):
         },
         "dateBegin":"2016-07-20",
         "dateEnd":"2016-07-21",
-        "dateInterval":"day",
+        "assetType":"day",
         "scale": 100
         }'''
 
@@ -204,7 +204,7 @@ def test_get_zonal_info_landuse_yearly(client):
         },
         "dateBegin":"2016-01-01",
         "dateEnd":"2017-01-01",
-        "dateInterval":"year",
+        "assetType":"year",
         "scale": 100
         }'''
 
@@ -281,6 +281,7 @@ def test_export_landuse(client):
     input = '''{
        "dateBegin": "2016-07-20",
        "dateEnd": "2016-07-21",
+       "assetType": "day",
        "region": {
            "coordinates": [[
                [5.846, 51.984],
@@ -311,6 +312,7 @@ def test_export_ndvi(client):
     input = '''{
        "dateBegin": "2016-07-20",
        "dateEnd": "2016-07-21",
+       "assetType": "day",
        "region": {
            "coordinates": [[
                [5.846, 51.984],
@@ -336,11 +338,42 @@ def test_export_ndvi(client):
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
 
+def test_export_ndvi_yearly(client):
+    input = '''{
+       "dateBegin": "2016-01-01",
+       "dateEnd": "2017-01-01",
+       "assetType": "year",
+       "region": {
+           "coordinates": [[
+               [5.846, 51.984],
+               [5.849, 51.961],
+               [5.91, 51.96],
+               [5.916, 51.985],
+               [5.877, 51.99],
+               [5.846, 51.984]]],
+           "geodesic": true,
+           "type": "Polygon"
+       }
+    }'''
+
+    r = client.post('/map/ndvi/export/', data=input,
+                    content_type='application/json')
+
+    assert r.status_code == 200
+
+    output = json.loads(r.get_data(as_text=True))
+
+    open('test_output_export_ndvi_yearly.json', 'w').write(r.get_data(as_text=True))
+
+    # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
+    assert 'https://earthengine.googleapis.com/api/download' in output['url']
+
 
 def test_export_landuse_vs_legger(client):
     input = '''{
        "dateBegin": "2016-07-20",
        "dateEnd": "2016-07-21",
+       "assetType": "day",
        "region": {
            "coordinates": [[
                [5.846, 51.984],
@@ -371,6 +404,7 @@ def test_export_satellite_image(client):
     input = '''{
        "dateBegin": "2016-07-20",
        "dateEnd": "2016-07-21",
+       "assetType": "day",
        "region": {
            "coordinates": [[
                [5.846, 51.984],
