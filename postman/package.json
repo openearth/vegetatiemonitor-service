@@ -4,8 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "newman run vegetatiemonitor_postman_collection.json --global-var \"baseUrl=https://v2-test-dot-vegetatie-monitor.appspot.com\""
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "newman": "^4.5.4"
+  }
 }
