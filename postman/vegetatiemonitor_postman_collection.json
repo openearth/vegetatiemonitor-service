@@ -1,0 +1,268 @@
+{
+	"info": {
+		"_postman_id": "ae03a0c6-939c-46ed-8dd5-afd04bf961f8",
+		"name": "Vegetatie Monitor",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "map/landuse/times/yearly",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"region\": {\n    \"coordinates\": [\n      [\n        [\n          5.846,\n          51.984\n        ],\n        [\n          5.849,\n          51.961\n        ],\n        [\n          5.91,\n          51.96\n        ],\n        [\n          5.916,\n          51.985\n        ],\n        [\n          5.877,\n          51.99\n        ],\n        [\n          5.846,\n          51.984\n        ]\n      ]\n    ],\n    \"geodesic\": true,\n    \"type\": \"Polygon\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/map/landuse/times/yearly",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"map",
+						"landuse",
+						"times",
+						"yearly"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "map/satellite/times/daily",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"region\": {\n    \"coordinates\": [\n      [\n        [\n          5.846,\n          51.984\n        ],\n        [\n          5.849,\n          51.961\n        ],\n        [\n          5.91,\n          51.96\n        ],\n        [\n          5.916,\n          51.985\n        ],\n        [\n          5.877,\n          51.99\n        ],\n        [\n          5.846,\n          51.984\n        ]\n      ]\n    ],\n    \"geodesic\": true,\n    \"type\": \"Polygon\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/map/satellite/times/daily",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"map",
+						"satellite",
+						"times",
+						"daily"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "map/landuse/zonal-timeseries/",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"dateBegin\": \"2009-01-01\",\r\n\t\"dateEnd\": \"2012-01-01\",\r\n\t\"scale\": 30,\r\n\t\"region\": {\r\n\t\t\"type\": \"FeatureCollection\",\r\n\t\t\"features\": [{\r\n\t\t\t\"type\": \"Feature\",\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"type\": \"Polygon\",\r\n\t\t\t\t\"coordinates\": [\r\n\t\t\t\t\t[\r\n\t\t\t\t\t\t[5.846, 51.984],\r\n\t\t\t\t\t\t[5.849, 51.961],\r\n\t\t\t\t\t\t[5.910, 51.960],\r\n\t\t\t\t\t\t[5.916, 51.985],\r\n\t\t\t\t\t\t[5.877, 51.990],\r\n\t\t\t\t\t\t[5.846, 51.984]\r\n\t\t\t\t\t]\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"id\": 1\r\n\t\t\t}\r\n\t\t}]\r\n\t}\r\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/map/landuse/zonal-timeseries/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"map",
+						"landuse",
+						"zonal-timeseries",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "map/landuse/zonal-info/ (year)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"region\": {\r\n\t\t\"type\": \"FeatureCollection\",\r\n\t\t\"features\": [{\r\n\t\t\t\"type\": \"Feature\",\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"type\": \"Polygon\",\r\n\t\t\t\t\"coordinates\": [\r\n\t\t\t\t\t[\r\n\t\t\t\t\t\t[5.846, 51.984],\r\n\t\t\t\t\t\t[5.849, 51.961],\r\n\t\t\t\t\t\t[5.910, 51.960],\r\n\t\t\t\t\t\t[5.916, 51.985],\r\n\t\t\t\t\t\t[5.877, 51.990],\r\n\t\t\t\t\t\t[5.846, 51.984]\r\n\t\t\t\t\t]\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"id\": 1\r\n\t\t\t}\r\n\t\t}]\r\n\t},\r\n\t\"dateBegin\": \"2017-01-01\",\r\n\t\"dateEnd\": \"2018-01-01\",\r\n\t\"assetType\": \"year\",\r\n\t\"scale\": 100\r\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/map/landuse/zonal-info/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"map",
+						"landuse",
+						"zonal-info",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "map/landuse/zonal-info/ (day)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"region\": {\r\n\t\t\"type\": \"FeatureCollection\",\r\n\t\t\"features\": [{\r\n\t\t\t\"type\": \"Feature\",\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"type\": \"Polygon\",\r\n\t\t\t\t\"coordinates\": [\r\n\t\t\t\t\t[\r\n\t\t\t\t\t\t[5.846, 51.984],\r\n\t\t\t\t\t\t[5.849, 51.961],\r\n\t\t\t\t\t\t[5.910, 51.960],\r\n\t\t\t\t\t\t[5.916, 51.985],\r\n\t\t\t\t\t\t[5.877, 51.990],\r\n\t\t\t\t\t\t[5.846, 51.984]\r\n\t\t\t\t\t]\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"id\": 1\r\n\t\t\t}\r\n\t\t}]\r\n\t},\r\n\t\"dateBegin\": \"2016-07-20\",\r\n\t\"dateEnd\": \"2016-07-21\",\r\n\t\"assetType\": \"day\",\r\n\t\"scale\": 100\r\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/map/landuse/zonal-info/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"map",
+						"landuse",
+						"zonal-info",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "map/legger/zonal-info/",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"region\": {\r\n\t\t\"type\": \"FeatureCollection\",\r\n\t\t\"features\": [{\r\n\t\t\t\"type\": \"Feature\",\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"type\": \"Polygon\",\r\n\t\t\t\t\"coordinates\": [\r\n\t\t\t\t\t[\r\n\t\t\t\t\t\t[5.846, 51.984],\r\n\t\t\t\t\t\t[5.849, 51.961],\r\n\t\t\t\t\t\t[5.910, 51.960],\r\n\t\t\t\t\t\t[5.916, 51.985],\r\n\t\t\t\t\t\t[5.877, 51.990],\r\n\t\t\t\t\t\t[5.846, 51.984]\r\n\t\t\t\t\t]\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"id\": 1\r\n\t\t\t}\r\n\t\t}]\r\n\t},\r\n\t\"scale\": 100\r\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/map/legger/zonal-info/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"map",
+						"legger",
+						"zonal-info",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "map/satellite/export/ (year)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"dateBegin\": \"2016-01-01\",\r\n   \"dateEnd\": \"2017-01-01\",\r\n   \"assetType\": \"year\",\r\n   \"region\": {\r\n       \"coordinates\": [[\r\n           [5.846, 51.984],\r\n           [5.849, 51.961],\r\n           [5.91, 51.96],\r\n           [5.916, 51.985],\r\n           [5.877, 51.99],\r\n           [5.846, 51.984]]],\r\n       \"geodesic\": true,\r\n       \"type\": \"Polygon\"\r\n   },\r\n   \"vis\": {\r\n        \"bands\": [\"swir\", \"nir\", \"green\"],\r\n        \"min\": 0.03, \r\n        \"max\": 0.5\r\n   }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/map/satellite/export/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"map",
+						"satellite",
+						"export",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "map/satellite/export/ (day)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"dateBegin\": \"2016-01-01\",\r\n   \"dateEnd\": \"2017-01-01\",\r\n   \"assetType\": \"year\",\r\n   \"region\": {\r\n       \"coordinates\": [[\r\n           [5.846, 51.984],\r\n           [5.849, 51.961],\r\n           [5.91, 51.96],\r\n           [5.916, 51.985],\r\n           [5.877, 51.99],\r\n           [5.846, 51.984]]],\r\n       \"geodesic\": true,\r\n       \"type\": \"Polygon\"\r\n   },\r\n   \"vis\": {\r\n        \"bands\": [\"swir\", \"nir\", \"green\"],\r\n        \"min\": 0.03, \r\n        \"max\": 0.5\r\n   }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/map/satellite/export/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"map",
+						"satellite",
+						"export",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
