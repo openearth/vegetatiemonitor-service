@@ -31,6 +31,8 @@ def initialize_google_earth_engine():
 
 initialize_google_earth_engine()
 
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'privatekey-firestore.json'
+
 # from . import api  # initialize EE first
 from api import app
 

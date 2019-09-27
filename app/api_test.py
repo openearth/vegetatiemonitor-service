@@ -338,6 +338,7 @@ def test_export_ndvi(client):
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
 
+
 def test_export_ndvi_yearly(client):
     input = '''{
        "dateBegin": "2016-01-01",
@@ -434,6 +435,26 @@ def test_export_satellite_image(client):
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
+
+
+def test_tile_images_size():
+    from google.cloud import firestore
+    db = firestore.Client()
+    tile_images = db.collection(u's2-tile-cache').list_documents()
+
+    count = len(list(tile_images))
+
+    assert count > 0
+
+#
+# NOTE: takes about 10 min
+#
+# def test_update_cloudfree_tile_images(client):
+#     r = client.post('/update_cloudfree_tile_images/', content_type='application/json')
+#
+#     assert r.status_code == 200
+#
+#     write_test_output('test_update_cloudfree_tile_images.json', r.get_data(as_text=True))
 
 
 def test_get_times(client):

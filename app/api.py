@@ -1,9 +1,13 @@
+import os
 import json
+from datetime import datetime, timedelta
 from flask import Flask, jsonify, redirect, request
 import flask_cors
 from flasgger import Swagger
 import ee
-from datetime import datetime, timedelta
+from google.cloud import firestore
+
+from firebase_admin import firestore
 
 import error_handler
 
@@ -112,7 +116,8 @@ def add_quality_score(images, g, score_percentile, scale):
 
     def cloud_score(i):
         score = i.select(quality_band)
-        score = score.reduceRegion(ee.Reducer.percentile([score_percentile]), ee.Geometry(g), scale).values().get(0)
+        score = score.reduceRegion(reducer=ee.Reducer.percentile([score_percentile]), geometry=ee.Geometry(g),
+                                   scale=scale, tileScale=4).values().get(0)
 
         return i.set('quality_score', score)
 
@@ -121,7 +126,7 @@ def add_quality_score(images, g, score_percentile, scale):
 
 def get_mostly_clean_images(images, g, options=None):
     geometry = ee.Geometry(g)
-    scale = 2000
+    scale = 1000
     score_percentile = 85
     cloud_frequency_threshold_delta = None
 
@@ -867,13 +872,19 @@ def _get_map_times_daily(id, region):
     date_end = datetime.today()
     date_begin = date_end - timedelta(days=365)
 
-    # TODO: add Memcache
+    # HACK: return least cloudy images using metadata
+    images = ee.ImageCollection('COPERNICUS/S2') \
+        .select(band_names['s2'], band_names['readable']) \
+        .filterBounds(region) \
+        .filter(ee.Filter.lte('CLOUDY_PIXEL_PERCENTAGE', 10))
+
+    # TODO: add Datastore
 
     # filter bounds of a region
-    aoi = ee.FeatureCollection('users/gdonchyts/vegetation-monitor-aoi')  # TODO: move to Cindy's
-    region = ee.Geometry(region).intersection(aoi.geometry(), 500)
-
-    images = get_satellite_images(region, date_begin, date_end, True)
+    # aoi = ee.FeatureCollection('users/gdonchyts/vegetation-monitor-aoi')  # TODO: move to Cindy's
+    # region = ee.Geometry(region).intersection(aoi.geometry(), 500)
+    #
+    # images = get_satellite_images(region, date_begin, date_end, True)
 
     image_times = ee.List(images.aggregate_array('system:time_start')) \
         .map(to_date_time_string).getInfo()
@@ -1406,6 +1417,90 @@ def get_image_by_id():
     url = get_image_url(image)
 
     return jsonify(url)
+
+
+def _compound_tile_index(tx, ty):
+    return tx * 100000 + ty
+
+
+@app.route('/get_times_by_tiles/', methods=['POST'])
+@flask_cors.cross_origin()
+def get_times_by_tiles():
+    json = request.get_json()
+
+    db = firestore.Client()
+    tile_images_ref = db.collection(u's2-tile-cache')
+
+    tiles = json['tiles']
+    print('tile count: ', len(tiles))
+
+    tile_images = {}
+    # times = set()
+    for t in tiles:
+        txty = _compound_tile_index(t['tx'], t['ty'])
+        tile_images_query = tile_images_ref.where(u'txty', u'==', txty).select(['image_time', 'image_id'])
+        for tile_image in tile_images_query.stream():
+            tile_image = tile_image.to_dict()
+            tile_images[tile_image['image_time']] = {'id': tile_image['image_id'], 'time': tile_image['image_time']}
+
+            # times.add(tile_image['image_time'])
+
+    # times = list(times)
+
+    return jsonify(tile_images)
+    # return jsonify(times)
+
+
+@app.route('/update_cloudfree_tile_images/', methods=['GET'])
+@flask_cors.cross_origin()
+def update_cloudfree_tile_images():
+    aoi = ee.FeatureCollection('users/gdonchyts/vegetation-monitor-aoi').geometry()
+    tiles = ee.FeatureCollection('users/gdonchyts/vegetation-monitor-tiles-z10')  # .limit(2)
+
+    date_end = datetime.today()
+    date_begin = date_end - timedelta(days=365)
+
+    def get_tile_images(tile):
+        region = tile.geometry().intersection(aoi, 500)
+        images = get_satellite_images(region, date_begin, date_end, True)
+
+        def set_tile_properties(i):
+            tile_image = ee.Feature(None).copyProperties(tile)
+            tile_image = tile_image.set('image_time', i.get('system:time_start'))
+            tile_image = tile_image.set('image_id', ee.String('COPERNICUS/S2/').cat(i.id()))
+
+            return tile_image
+
+        return images.map(set_tile_properties)
+
+    tile_images = tiles.map(get_tile_images).flatten()
+    tile_images = ee.FeatureCollection(tile_images).getInfo()
+
+    tile_images = [f['properties'] for f in tile_images['features']]
+
+    db = firestore.Client()
+    tile_images_ref = db.collection(u's2-tile-cache')
+
+    # delete previous tile_image records
+    for tile in tile_images_ref.stream():
+        tile.reference.delete()
+
+    # add new tile_image records
+    for tile_image in tile_images:
+        t = tile_images_ref.document()
+        tile_image['txty'] = _compound_tile_index(tile_image['tx'], tile_image['ty'])
+        t.set(tile_image)
+
+    return 'DONE'
+
+
+@app.route('/get_cloudfree_tile_image_count/', methods=['GET'])
+@flask_cors.cross_origin()
+def get_cloudfree_tile_image_count():
+    db = firestore.Client()
+    tile_images = db.collection(u's2-tile-cache').list_documents()
+
+    return str(len(list(tile_images)))
 
 
 @app.route('/')
