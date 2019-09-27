@@ -880,6 +880,7 @@ def _get_map_times_daily(id, region):
     # HACK: return least cloudy images using metadata
     images = ee.ImageCollection('COPERNICUS/S2') \
         .select(band_names['s2'], band_names['readable']) \
+        .filterDate(ee.Date(date_begin), ee.Date(date_end)) \
         .filterBounds(region) \
         .filter(ee.Filter.lte('CLOUDY_PIXEL_PERCENTAGE', 10))
 

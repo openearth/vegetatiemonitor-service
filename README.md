@@ -17,3 +17,6 @@ Browse:
 
 gcloud app browse
 
+To deploy/update cron job, run:
+gcloud app deploy cron.yaml
+
