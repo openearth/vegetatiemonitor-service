@@ -7,8 +7,6 @@ from flasgger import Swagger
 import ee
 from google.cloud import firestore
 
-from firebase_admin import firestore
-
 import error_handler
 
 # import connexion
