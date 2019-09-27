@@ -234,11 +234,15 @@ def _get_landuse(region, date_begin, date_end):
     if area <= 1e8:
         region = ee.Geometry(region).buffer(ee.Number(area).sqrt())
 
-    legger_id = 'users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017'
+    legger_id = 'users/gertjang/FI_Rijn_Maas_merged_2012_numfdls'
 
     legger = ee.FeatureCollection(legger_id)
 
     class_property = "Legger"
+
+    legger = legger.filter(ee.Filter.neq(class_property, None)) \
+        .map(lambda f: f.set(class_property, ee.Number(f.get(class_property)))) \
+        .remap([8, 9, 1, 2, 3, 4, 10], [1, 2, 3, 4, 5, 6, 2], class_property)
 
     legger_image = ee.Image().int().paint(legger, class_property) \
         .rename(class_property)
@@ -377,12 +381,15 @@ def get_landuse_vs_legger(region, date_begin, date_end, vis):
 
 
 def _get_legger_image():
-    legger_features = ee.FeatureCollection('users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017')
+    legger_features = ee.FeatureCollection('users/gertjang/FI_Rijn_Maas_merged_2012_numfdls')
 
     class_property = "Legger"
 
-    legger = ee.Image().int().paint(legger_features, class_property) \
-        .rename('type')
+    legger = legger_features.filter(ee.Filter.neq(class_property, None)) \
+        .map(lambda f: f.set('type', ee.Number(f.get(class_property)))) \
+        .remap([8, 9, 1, 2, 3, 4, 10], [1, 2, 3, 4, 5, 6, 2], 'type')
+
+    legger = ee.Image().int().paint(legger, 'type')
 
     return legger
 
