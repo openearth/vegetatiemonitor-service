@@ -1460,8 +1460,17 @@ def get_times_by_tiles():
 
     # times = list(times)
 
-    return jsonify(list(tile_images.keys()))
-    # return jsonify(times)
+    times = list(tile_images.keys())
+
+    date_list = []
+    for time in times:
+        date_list.append({
+            "date": datetime.fromtimestamp(time/1000.0).strftime('%Y-%m-%d'),
+            "dateFormat": 'YYYY-MM-DD',
+            "type": "instance"
+        })
+
+    return jsonify(date_list)
 
 
 @app.route('/update_cloudfree_tile_images/', methods=['GET'])
