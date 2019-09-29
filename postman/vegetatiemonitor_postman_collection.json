@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ae03a0c6-939c-46ed-8dd5-afd04bf961f8",
+		"_postman_id": "c61b0b59-8444-46e6-a104-b2108aeddd5c",
 		"name": "Vegetatie Monitor",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -259,6 +259,82 @@
 						"export",
 						""
 					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_times_by_tiles",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"tiles\": [\r\n   { \"tx\": 1051, \"ty\": 676 },\r\n   { \"tx\": 1052, \"ty\": 676 },\r\n   { \"tx\": 1051, \"ty\": 677 },\r\n   { \"tx\": 1052, \"ty\": 677 },\r\n   { \"tx\": 1050, \"ty\": 677 }\r\n  ]\r\n}\r\n\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/get_times_by_tiles/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"get_times_by_tiles",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update cloud-free images",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ddf8fc77-5c74-42ec-ac41-d4308d86860c",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/update_cloudfree_tile_images",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"update_cloudfree_tile_images"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cloud-free tile count",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": ""
 				}
 			},
 			"response": []
