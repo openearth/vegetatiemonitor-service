@@ -879,7 +879,7 @@ def _get_map_times_daily(id, region):
     # TODO: add Datastore
 
     # filter bounds of a region
-    # aoi = ee.FeatureCollection('users/gdonchyts/vegetation-monitor-aoi')  # TODO: move to Cindy's
+    # aoi = ee.FeatureCollection('users/gdonchyts/vegetation-monitor-aoi')  # TODO: move to gs://deltares-rws
     # region = ee.Geometry(region).intersection(aoi.geometry(), 500)
     #
     # images = get_satellite_images(region, date_begin, date_end, True)
@@ -1429,23 +1429,31 @@ def get_times_by_tiles():
     db = firestore.Client()
     tile_images_ref = db.collection(u's2-tile-cache')
 
-    tiles = json['tiles']
-    print('tile count: ', len(tiles))
+    tilesMin = json['tilesMin']
+    tilesMax = json['tilesMax']
+    print('tilesMin: ', tilesMin)
+    print('tilesMax: ', tilesMax)
 
     tile_images = {}
     # times = set()
-    for t in tiles:
-        txty = _compound_tile_index(t['tx'], t['ty'])
-        tile_images_query = tile_images_ref.where(u'txty', u'==', txty).select(['image_time', 'image_id'])
-        for tile_image in tile_images_query.stream():
-            tile_image = tile_image.to_dict()
-            tile_images[tile_image['image_time']] = {'id': tile_image['image_id'], 'time': tile_image['image_time']}
+    txty_min = _compound_tile_index(tilesMin['tx'], tilesMin['ty'])
+    txty_max = _compound_tile_index(tilesMax['tx'], tilesMax['ty'])
 
-            # times.add(tile_image['image_time'])
+    tile_images_query = tile_images_ref.where(u'txty', u'>=', txty_min).where(u'txty', u'<=', txty_max) \
+        .select(['image_time', 'image_id'])
+
+    for tile_image in tile_images_query.stream():
+        tile_image = tile_image.to_dict()
+        tile_images[tile_image['image_time']] = {
+            'id': tile_image['image_id'],
+            'time': tile_image['image_time']
+        }
+
+        # times.add(tile_image['image_time'])
 
     # times = list(times)
 
-    return jsonify(tile_images)
+    return jsonify(list(tile_images.keys()))
     # return jsonify(times)
 
 

@@ -364,7 +364,7 @@ def test_export_ndvi_yearly(client):
 
     output = json.loads(r.get_data(as_text=True))
 
-    open('test_output_export_ndvi_yearly.json', 'w').write(r.get_data(as_text=True))
+    write_test_output('test_output_export_ndvi_yearly.json', r.get_data(as_text=True))
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
@@ -445,6 +445,26 @@ def test_tile_images_size():
     count = len(list(tile_images))
 
     assert count > 0
+
+
+def test_get_times_by_tiles(client):
+    input = '''{
+      "tilesMin": { "tx": 527, "ty": 338 },
+      "tilesMax": { "tx": 528, "ty": 339 }
+    }'''
+
+    # randomize coordinate to skip EE caching
+    r = client.post('/get_times_by_tiles/', data=input, content_type='application/json')
+
+    # assert r.status_code == 200
+
+    s = r.get_data(as_text=True)
+
+    write_test_output('test_output_test_get_times_by_tiles.json', s)
+
+    times = json.loads(s)
+
+    assert len(times) > 0
 
 #
 # NOTE: takes about 10 min
