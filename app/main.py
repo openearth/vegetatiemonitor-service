@@ -27,9 +27,23 @@ def initialize_google_earth_engine():
     # delete temporary private key file
     if 'key' in os.environ:
         os.unlink(EE_PRIVATE_KEY_FILE)
-    
+ 
 
 initialize_google_earth_engine()
+
+
+FIREBASE_PRIVATE_KEY_FILE = 'privatekey-firestore.json'
+
+# write Firebase service account file
+if 'key_firebase' in os.environ:
+    print('Writing privatekey-firestore.json from environmental variable ...')
+    content = base64.b64decode(os.environ['key_firebase']).decode('ascii')
+
+    with open(FIREBASE_PRIVATE_KEY_FILE, 'w') as f:
+        f.write(content)
+
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = FIREBASE_PRIVATE_KEY_FILE
+
 
 # from . import api  # initialize EE first
 from api import app

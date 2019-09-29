@@ -238,3 +238,16 @@ paths:
           schema:
             "$ref": "#/definitions/MapUri"
 
+  /get_times_by_tiles/:
+    post:
+      produces:
+        - application/json
+      description: Gets image by XYZ tiles
+      operationId: getTimesByTiles
+      parameters:
+        - in: body
+          name: tile_ids
+          required: true
+      responses:
+        200:
+          description: array or times

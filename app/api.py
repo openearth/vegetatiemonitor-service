@@ -1,9 +1,11 @@
+import os
 import json
+from datetime import datetime, timedelta
 from flask import Flask, jsonify, redirect, request
 import flask_cors
 from flasgger import Swagger
 import ee
-from datetime import datetime, timedelta
+from google.cloud import firestore
 
 import error_handler
 
@@ -112,7 +114,8 @@ def add_quality_score(images, g, score_percentile, scale):
 
     def cloud_score(i):
         score = i.select(quality_band)
-        score = score.reduceRegion(ee.Reducer.percentile([score_percentile]), ee.Geometry(g), scale).values().get(0)
+        score = score.reduceRegion(reducer=ee.Reducer.percentile([score_percentile]), geometry=ee.Geometry(g),
+                                   scale=scale, tileScale=4).values().get(0)
 
         return i.set('quality_score', score)
 
@@ -121,7 +124,7 @@ def add_quality_score(images, g, score_percentile, scale):
 
 def get_mostly_clean_images(images, g, options=None):
     geometry = ee.Geometry(g)
-    scale = 2000
+    scale = 1000
     score_percentile = 85
     cloud_frequency_threshold_delta = None
 
@@ -181,9 +184,7 @@ def visualize_image(image, vis):
 
 def get_satellite_image(region, date_begin, date_end, vis):
     images = get_satellite_images(region, date_begin, date_end, False)
-
     image = ee.Image(images.mosaic()).divide(10000)
-
     image = visualize_image(image, vis)
 
     return image
@@ -233,11 +234,15 @@ def _get_landuse(region, date_begin, date_end):
     if area <= 1e8:
         region = ee.Geometry(region).buffer(ee.Number(area).sqrt())
 
-    legger_id = 'users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017'
+    legger_id = 'users/gertjang/FI_Rijn_Maas_merged_2012_numfdls'
 
     legger = ee.FeatureCollection(legger_id)
 
     class_property = "Legger"
+
+    legger = legger.filter(ee.Filter.neq(class_property, None)) \
+        .map(lambda f: f.set(class_property, ee.Number(f.get(class_property)))) \
+        .remap([8, 9, 1, 2, 3, 4, 10], [1, 2, 3, 4, 5, 6, 2], class_property)
 
     legger_image = ee.Image().int().paint(legger, class_property) \
         .rename(class_property)
@@ -353,7 +358,7 @@ def get_landuse(region, date_begin, date_end, vis):
         .sldStyle(legger_style)
 
 
-def _get_landuse_vs_legger(date_begin, date_end, region):
+def _get_landuse_vs_legger(region, date_begin, date_end):
     legger = _get_legger_image()
     mask = legger.eq([1, 2, 3, 4, 5, 6]).reduce(ee.Reducer.anyNonZero())
     legger = legger.updateMask(mask)
@@ -364,7 +369,7 @@ def _get_landuse_vs_legger(date_begin, date_end, region):
 
 
 def get_landuse_vs_legger(region, date_begin, date_end, vis):
-    diff = _get_landuse_vs_legger(date_begin, date_end, region)
+    diff = _get_landuse_vs_legger(region, date_begin, date_end)
 
     # use RWS legger colors
     palette = ['1a9850', '91cf60', 'd9ef8b', 'ffffbf', 'fee08b', 'fc8d59',
@@ -376,12 +381,15 @@ def get_landuse_vs_legger(region, date_begin, date_end, vis):
 
 
 def _get_legger_image():
-    legger_features = ee.FeatureCollection('users/rogersckw9/ecotoop/legger-rijn-maas-merged-2017')
+    legger_features = ee.FeatureCollection('users/gertjang/FI_Rijn_Maas_merged_2012_numfdls')
 
     class_property = "Legger"
 
-    legger = ee.Image().int().paint(legger_features, class_property) \
-        .rename('type')
+    legger = legger_features.filter(ee.Filter.neq(class_property, None)) \
+        .map(lambda f: f.set('type', ee.Number(f.get(class_property)))) \
+        .remap([8, 9, 1, 2, 3, 4, 10], [1, 2, 3, 4, 5, 6, 2], 'type')
+
+    legger = ee.Image().int().paint(legger, 'type')
 
     return legger
 
@@ -402,20 +410,45 @@ maps = {
 }
 
 
-def export_satellite_image(region, date_begin, date_end, vis):
-    return get_satellite_image(region, date_begin, date_end, vis)
+def export_satellite_image(region, date_begin, date_end, vis, asset_type):
+    if asset_type == 'day':
+        image = get_satellite_image(region, date_begin, date_end, vis)
+    else:
+        images = get_image_collection(yearly_collections["satellite"], region, date_begin, date_end)
+        image = ee.Image(images.first())
+        image = visualize_image(image, vis)
+
+    return image
 
 
-def export_ndvi(region, date_begin, date_end, vis):
-    return _get_ndvi(date_begin, date_end, region)
+def export_ndvi(region, date_begin, date_end, vis, asset_type):
+    if asset_type == 'day':
+        image = _get_ndvi(date_begin, date_end, region)
+    else:
+        images = get_image_collection(yearly_collections["satellite"], region, date_begin, date_end)
+        image = ee.Image(images.first())
+
+    return image
 
 
-def export_landuse(region, date_begin, date_end, vis):
-    return _get_landuse(region, date_begin, date_end)
+def export_landuse(region, date_begin, date_end, vis, asset_type):
+    if asset_type == 'day':
+        image = _get_landuse(region, date_begin, date_end)
+    else:
+        images = get_image_collection(yearly_collections["landuse"], region, date_begin, date_end)
+        image = ee.Image(images.first())
+
+    return image
 
 
-def export_landuse_vs_legger(region, date_begin, date_end, vis):
-    return _get_landuse_vs_legger(date_begin, date_end, region)
+def export_landuse_vs_legger(region, date_begin, date_end, vis, asset_type):
+    if asset_type == 'day':
+        image = _get_landuse_vs_legger(region, date_begin, date_end)
+    else:
+        images = get_image_collection(yearly_collections["landuse_vs_legger"], region, date_begin, date_end)
+        image = ee.Image(images.first())
+
+    return image
 
 
 exports = {
@@ -466,9 +499,9 @@ def _get_zonal_info(features, image, scale):
     return features.toList(5000).map(get_feature_info)
 
 
-def get_zonal_info_landuse(region, date_begin, date_end, scale, interval):
+def get_zonal_info_landuse(region, date_begin, date_end, scale, asset_type):
     features = ee.FeatureCollection(region["features"])
-    if interval == 'day':
+    if asset_type == 'day':
         image = _get_landuse(features.geometry(), date_begin, date_end)
     else:
         images = get_image_collection(yearly_collections['landuse'], features.geometry(), date_begin, date_end)
@@ -479,15 +512,15 @@ def get_zonal_info_landuse(region, date_begin, date_end, scale, interval):
     return info.getInfo()
 
 
-def get_zonal_info_landuse_vs_legger(region, date_begin, date_end, scale, interval):
+def get_zonal_info_landuse_vs_legger(region, date_begin, date_end, scale, asset_type):
     pass
 
 
-def get_zonal_info_ndvi(region, date_begin, date_end, scale, interval):
+def get_zonal_info_ndvi(region, date_begin, date_end, scale, asset_type):
     pass
 
 
-def get_zonal_info_legger(region, date_begin, date_end, scale, interval):
+def get_zonal_info_legger(region, date_begin, date_end, scale, asset_type):
     features = ee.FeatureCollection(region["features"])
 
     image = _get_legger_image()
@@ -508,8 +541,7 @@ yearly_collections = {
     'satellite': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
     'ndvi': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
     'landuse': 'users/rogersckw9/vegetatiemonitor/yearly-classified-images',
-    'landuse-vs-legger': 'users/rogersckw9/vegetatiemonitor/classificatie-vs-legger',
-    'legger': 'users/rogersckw9/ecotoop/ecotoop-maps-6-class'
+    'landuse-vs-legger': 'users/rogersckw9/vegetatiemonitor/classificatie-vs-legger'
 }
 
 
@@ -670,7 +702,7 @@ zonal_timeseries = {
 
 modes = ['daily', 'yearly']
 
-intervals = ['day', 'year']
+asset_types = ['day', 'year']
 
 
 def get_image_url(image):
@@ -697,6 +729,15 @@ def export_map(id):
 
     region = j['region']
 
+    if 'assetType' in j:
+        asset_type = j['assetType']
+    else:
+        asset_type = 'day'
+
+    if asset_type not in asset_types:
+        return 'Error: assetType {0} is not supported, only day or year available' \
+            .format(asset_type)
+
     date_begin = j['dateBegin']
     if 'dateEnd' not in j:
         date_end = ee.Date(date_begin).advance(1, 'day')
@@ -713,7 +754,7 @@ def export_map(id):
     if 'scale' in j:
         scale = j['scale']
 
-    image = exports[id](region, date_begin, date_end, vis)
+    image = exports[id](region, date_begin, date_end, vis, asset_type)
 
     format = 'tif'
     if id == 'satellite':
@@ -773,14 +814,14 @@ def get_map_zonal_info(id):
 
     json = request.get_json()
 
-    if 'dateInterval' in json:
-        interval = json['dateInterval']
+    if 'assetType' in json:
+        asset_type = json['assetType']
     else:
-        interval = 'day'
+        asset_type = 'day'
 
-    if interval not in intervals:
-        return 'Error: dateInterval {0} is not supported, only day or year available' \
-            .format(interval)
+    if asset_type not in asset_types:
+        return 'Error: assetType {0} is not supported, only day or year available' \
+            .format(asset_type)
 
     region = json['region']
 
@@ -795,7 +836,7 @@ def get_map_zonal_info(id):
 
     scale = json['scale']
 
-    info = zonal_info[id](region, date_begin, date_end, scale, interval)
+    info = zonal_info[id](region, date_begin, date_end, scale, asset_type)
 
     return jsonify(info)
 
@@ -836,13 +877,19 @@ def _get_map_times_daily(id, region):
     date_end = datetime.today()
     date_begin = date_end - timedelta(days=365)
 
-    # TODO: add Memcache
+    # HACK: return least cloudy images using metadata
+    images = ee.ImageCollection('COPERNICUS/S2') \
+        .select(band_names['s2'], band_names['readable']) \
+        .filterBounds(region) \
+        .filter(ee.Filter.lte('CLOUDY_PIXEL_PERCENTAGE', 10))
+
+    # TODO: add Datastore
 
     # filter bounds of a region
-    aoi = ee.FeatureCollection('users/gdonchyts/vegetation-monitor-aoi')  # TODO: move to Cindy's
-    region = ee.Geometry(region).intersection(aoi.geometry(), 500)
-
-    images = get_satellite_images(region, date_begin, date_end, True)
+    # aoi = ee.FeatureCollection('users/gdonchyts/vegetation-monitor-aoi')  # TODO: move to gs://deltares-rws
+    # region = ee.Geometry(region).intersection(aoi.geometry(), 500)
+    #
+    # images = get_satellite_images(region, date_begin, date_end, True)
 
     image_times = ee.List(images.aggregate_array('system:time_start')) \
         .map(to_date_time_string).getInfo()
@@ -1375,6 +1422,98 @@ def get_image_by_id():
     url = get_image_url(image)
 
     return jsonify(url)
+
+
+def _compound_tile_index(tx, ty):
+    return tx * 100000 + ty
+
+
+@app.route('/get_times_by_tiles/', methods=['POST'])
+@flask_cors.cross_origin()
+def get_times_by_tiles():
+    json = request.get_json()
+
+    db = firestore.Client()
+    tile_images_ref = db.collection(u's2-tile-cache')
+
+    tilesMin = json['tilesMin']
+    tilesMax = json['tilesMax']
+    print('tilesMin: ', tilesMin)
+    print('tilesMax: ', tilesMax)
+
+    tile_images = {}
+    # times = set()
+    txty_min = _compound_tile_index(tilesMin['tx'], tilesMin['ty'])
+    txty_max = _compound_tile_index(tilesMax['tx'], tilesMax['ty'])
+
+    tile_images_query = tile_images_ref.where(u'txty', u'>=', txty_min).where(u'txty', u'<=', txty_max) \
+        .select(['image_time', 'image_id'])
+
+    for tile_image in tile_images_query.stream():
+        tile_image = tile_image.to_dict()
+        tile_images[tile_image['image_time']] = {
+            'id': tile_image['image_id'],
+            'time': tile_image['image_time']
+        }
+
+        # times.add(tile_image['image_time'])
+
+    # times = list(times)
+
+    return jsonify(list(tile_images.keys()))
+    # return jsonify(times)
+
+
+@app.route('/update_cloudfree_tile_images/', methods=['GET'])
+@flask_cors.cross_origin()
+def update_cloudfree_tile_images():
+    aoi = ee.FeatureCollection('users/gdonchyts/vegetation-monitor-aoi').geometry()
+    tiles = ee.FeatureCollection('users/gdonchyts/vegetation-monitor-tiles-z10')  # .limit(2)
+
+    date_end = datetime.today()
+    date_begin = date_end - timedelta(days=365)
+
+    def get_tile_images(tile):
+        region = tile.geometry().intersection(aoi, 500)
+        images = get_satellite_images(region, date_begin, date_end, True)
+
+        def set_tile_properties(i):
+            tile_image = ee.Feature(None).copyProperties(tile)
+            tile_image = tile_image.set('image_time', i.get('system:time_start'))
+            tile_image = tile_image.set('image_id', ee.String('COPERNICUS/S2/').cat(i.id()))
+
+            return tile_image
+
+        return images.map(set_tile_properties)
+
+    tile_images = tiles.map(get_tile_images).flatten()
+    tile_images = ee.FeatureCollection(tile_images).getInfo()
+
+    tile_images = [f['properties'] for f in tile_images['features']]
+
+    db = firestore.Client()
+    tile_images_ref = db.collection(u's2-tile-cache')
+
+    # delete previous tile_image records
+    for tile in tile_images_ref.stream():
+        tile.reference.delete()
+
+    # add new tile_image records
+    for tile_image in tile_images:
+        t = tile_images_ref.document()
+        tile_image['txty'] = _compound_tile_index(tile_image['tx'], tile_image['ty'])
+        t.set(tile_image)
+
+    return 'DONE'
+
+
+@app.route('/get_cloudfree_tile_image_count/', methods=['GET'])
+@flask_cors.cross_origin()
+def get_cloudfree_tile_image_count():
+    db = firestore.Client()
+    tile_images = db.collection(u's2-tile-cache').list_documents()
+
+    return str(len(list(tile_images)))
 
 
 @app.route('/')

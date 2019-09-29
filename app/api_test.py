@@ -68,30 +68,30 @@ def test_get_zonal_info_legger(client):
       {
         "area_per_type": [
           {
-            "area": 1790886.72332644,
+            "area": 1785208.1637982538, 
             "type": "1"
-          },
+          }, 
           {
-            "area": 455036.860223269,
+            "area": 561281.6935853248, 
             "type": "2"
-          },
+          }, 
           {
-            "area": 2252862.6694067856,
+            "area": 2146417.7654718137, 
             "type": "3"
-          },
+          }, 
           {
-            "area": 650561.147265625,
+            "area": 613248.6875229779, 
             "type": "4"
-          },
+          }, 
           {
-            "area": 364032.44482421875,
+            "area": 394880.0927734375, 
             "type": "5"
-          },
+          }, 
           {
-            "area": 207065.13603515626,
+            "area": 170047.17412109376, 
             "type": "6"
           }
-        ],
+        ], 
         "id": 1
       }
     ]'''
@@ -127,7 +127,7 @@ def test_get_zonal_info_landuse_daily(client):
         },
         "dateBegin":"2016-07-20",
         "dateEnd":"2016-07-21",
-        "dateInterval":"day",
+        "assetType":"day",
         "scale": 100
         }'''
 
@@ -145,30 +145,30 @@ def test_get_zonal_info_landuse_daily(client):
       {
         "area_per_type": [
           {
-            "area": 2070230.8170802696,
+            "area": 2014715.5089748008, 
             "type": "1"
-          },
+          }, 
           {
-            "area": 688500.925067019,
+            "area": 903766.6815965839, 
             "type": "2"
-          },
+          }, 
           {
-            "area": 1475154.438426777,
+            "area": 1403438.0272403492, 
             "type": "3"
-          },
+          }, 
           {
-            "area": 1238260.7638825062,
+            "area": 1232282.807599954, 
             "type": "4"
-          },
+          }, 
           {
-            "area": 410510.32361557905,
+            "area": 390253.6845549939, 
             "type": "5"
-          },
+          }, 
           {
-            "area": 758932.494140625,
+            "area": 654035.6987304688, 
             "type": "6"
           }
-        ],
+        ], 
         "id": 1
       }
     ]'''
@@ -204,7 +204,7 @@ def test_get_zonal_info_landuse_yearly(client):
         },
         "dateBegin":"2016-01-01",
         "dateEnd":"2017-01-01",
-        "dateInterval":"year",
+        "assetType":"year",
         "scale": 100
         }'''
 
@@ -281,6 +281,7 @@ def test_export_landuse(client):
     input = '''{
        "dateBegin": "2016-07-20",
        "dateEnd": "2016-07-21",
+       "assetType": "day",
        "region": {
            "coordinates": [[
                [5.846, 51.984],
@@ -311,6 +312,7 @@ def test_export_ndvi(client):
     input = '''{
        "dateBegin": "2016-07-20",
        "dateEnd": "2016-07-21",
+       "assetType": "day",
        "region": {
            "coordinates": [[
                [5.846, 51.984],
@@ -337,10 +339,42 @@ def test_export_ndvi(client):
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
 
 
+def test_export_ndvi_yearly(client):
+    input = '''{
+       "dateBegin": "2016-01-01",
+       "dateEnd": "2017-01-01",
+       "assetType": "year",
+       "region": {
+           "coordinates": [[
+               [5.846, 51.984],
+               [5.849, 51.961],
+               [5.91, 51.96],
+               [5.916, 51.985],
+               [5.877, 51.99],
+               [5.846, 51.984]]],
+           "geodesic": true,
+           "type": "Polygon"
+       }
+    }'''
+
+    r = client.post('/map/ndvi/export/', data=input,
+                    content_type='application/json')
+
+    assert r.status_code == 200
+
+    output = json.loads(r.get_data(as_text=True))
+
+    write_test_output('test_output_export_ndvi_yearly.json', r.get_data(as_text=True))
+
+    # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
+    assert 'https://earthengine.googleapis.com/api/download' in output['url']
+
+
 def test_export_landuse_vs_legger(client):
     input = '''{
        "dateBegin": "2016-07-20",
        "dateEnd": "2016-07-21",
+       "assetType": "day",
        "region": {
            "coordinates": [[
                [5.846, 51.984],
@@ -371,6 +405,7 @@ def test_export_satellite_image(client):
     input = '''{
        "dateBegin": "2016-07-20",
        "dateEnd": "2016-07-21",
+       "assetType": "day",
        "region": {
            "coordinates": [[
                [5.846, 51.984],
@@ -400,6 +435,46 @@ def test_export_satellite_image(client):
 
     # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
+
+
+def test_tile_images_size():
+    from google.cloud import firestore
+    db = firestore.Client()
+    tile_images = db.collection(u's2-tile-cache').list_documents()
+
+    count = len(list(tile_images))
+
+    assert count > 0
+
+
+def test_get_times_by_tiles(client):
+    input = '''{
+      "tilesMin": { "tx": 527, "ty": 338 },
+      "tilesMax": { "tx": 528, "ty": 339 }
+    }'''
+
+    # randomize coordinate to skip EE caching
+    r = client.post('/get_times_by_tiles/', data=input, content_type='application/json')
+
+    # assert r.status_code == 200
+
+    s = r.get_data(as_text=True)
+
+    write_test_output('test_output_test_get_times_by_tiles.json', s)
+
+    times = json.loads(s)
+
+    assert len(times) > 0
+
+#
+# NOTE: takes about 10 min
+#
+# def test_update_cloudfree_tile_images(client):
+#     r = client.post('/update_cloudfree_tile_images/', content_type='application/json')
+#
+#     assert r.status_code == 200
+#
+#     write_test_output('test_update_cloudfree_tile_images.json', r.get_data(as_text=True))
 
 
 def test_get_times(client):
