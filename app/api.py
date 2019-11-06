@@ -370,7 +370,8 @@ def _get_legger_image():
     legger_features = ee.FeatureCollection('users/gena/vegetatie-vlakken-geo')
 
     legger_features = legger_features \
-        .map(lambda f: f.set('type', legger_classes.get(f.get('VL_KLASSE'))))
+        .map(lambda f: f.set('type', legger_classes.get(f.get('VL_KLASSE')))) \
+        .filter(ee.Filter.equals('type', 0).Not())
 
     legger = ee.Image().int().paint(legger_features, 'type')
 

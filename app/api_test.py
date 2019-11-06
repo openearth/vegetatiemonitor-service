@@ -69,10 +69,6 @@ def test_get_zonal_info_legger(client):
            "id": 1,
             "area_per_type": [
               {
-                "area": 567062.7642463235,
-                "type": "0"
-              },
-              {
                 "area": 1624781.6086224725,
                 "type": "1"
               },
