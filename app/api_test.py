@@ -64,36 +64,40 @@ def test_get_zonal_info_legger(client):
 
     output = sorted(json.loads(s))
 
-    output_expected = '''[
-      {
-        "area_per_type": [
-          {
-            "area": 1785208.1637982538, 
-            "type": "1"
-          }, 
-          {
-            "area": 561281.6935853248, 
-            "type": "2"
-          }, 
-          {
-            "area": 2146417.7654718137, 
-            "type": "3"
-          }, 
-          {
-            "area": 613248.6875229779, 
-            "type": "4"
-          }, 
-          {
-            "area": 394880.0927734375, 
-            "type": "5"
-          }, 
-          {
-            "area": 170047.17412109376, 
-            "type": "6"
-          }
-        ], 
-        "id": 1
-      }
+    output_expected = output_expected = '''[
+        {
+           "id": 1,
+            "area_per_type": [
+              {
+                "area": 567062.7642463235,
+                "type": "0"
+              },
+              {
+                "area": 1624781.6086224725,
+                "type": "1"
+              },
+              {
+                "area": 252953.091796875,
+                "type": "2"
+              },
+              {
+                "area": 1854597.840469899,
+                "type": "3"
+              },
+              {
+                "area": 682186.362109375,
+                "type": "4"
+              },
+              {
+                "area": 382541.0576171875,
+                "type": "5"
+              },
+              {
+                "area": 104886.63330078125,
+                "type": "6"
+              }
+            ]
+        }
     ]'''
 
     output_expected = sorted(json.loads(output_expected))
@@ -145,27 +149,27 @@ def test_get_zonal_info_landuse_daily(client):
       {
         "area_per_type": [
           {
-            "area": 2014715.5089748008, 
+            "area": 2223256.0580882356, 
             "type": "1"
           }, 
           {
-            "area": 903766.6815965839, 
+            "area": 1341505.026518459, 
             "type": "2"
           }, 
           {
-            "area": 1403438.0272403492, 
+            "area": 2087933.2076344208, 
             "type": "3"
           }, 
           {
-            "area": 1232282.807599954, 
+            "area": 627820.696160769, 
             "type": "4"
           }, 
           {
-            "area": 390253.6845549939, 
+            "area": 333196.79345703125, 
             "type": "5"
           }, 
           {
-            "area": 654035.6987304688, 
+            "area": 314669.0810546875, 
             "type": "6"
           }
         ], 
@@ -437,34 +441,34 @@ def test_export_satellite_image(client):
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
 
 
-def test_tile_images_size():
-    from google.cloud import firestore
-    db = firestore.Client()
-    tile_images = db.collection(u's2-tile-cache').list_documents()
-
-    count = len(list(tile_images))
-
-    assert count > 0
-
-
-def test_get_times_by_tiles(client):
-    input = '''{
-      "tilesMin": { "tx": 527, "ty": 338 },
-      "tilesMax": { "tx": 528, "ty": 339 }
-    }'''
-
-    # randomize coordinate to skip EE caching
-    r = client.post('/get_times_by_tiles/', data=input, content_type='application/json')
-
-    # assert r.status_code == 200
-
-    s = r.get_data(as_text=True)
-
-    write_test_output('test_output_test_get_times_by_tiles.json', s)
-
-    times = json.loads(s)
-
-    assert len(times) > 0
+# def test_tile_images_size():
+#     from google.cloud import firestore
+#     db = firestore.Client()
+#     tile_images = db.collection(u's2-tile-cache').list_documents()
+#
+#     count = len(list(tile_images))
+#
+#     assert count > 0
+#
+#
+# def test_get_times_by_tiles(client):
+#     input = '''{
+#       "tilesMin": { "tx": 527, "ty": 338 },
+#       "tilesMax": { "tx": 528, "ty": 339 }
+#     }'''
+#
+#     # randomize coordinate to skip EE caching
+#     r = client.post('/get_times_by_tiles/', data=input, content_type='application/json')
+#
+#     # assert r.status_code == 200
+#
+#     s = r.get_data(as_text=True)
+#
+#     write_test_output('test_output_test_get_times_by_tiles.json', s)
+#
+#     times = json.loads(s)
+#
+#     assert len(times) > 0
 
 #
 # NOTE: takes about 10 min
