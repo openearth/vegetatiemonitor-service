@@ -136,7 +136,7 @@ def get_mostly_clean_images(images, g, options=None):
         if 'cloud_frequency_threshold_delta' in options:
             cloud_frequency_threshold_delta = options['cloud_frequency_threshold_delta']
 
-    cloud_frequency = 0.74  # Calculated for the Netherlands, hardcoded for speed
+    cloud_frequency = 0.9  # Calculated for the Netherlands, hardcoded for speed
 
     cloud_frequency = ee.Number(cloud_frequency)
 
@@ -230,9 +230,9 @@ def _get_landuse(region, date_begin, date_end):
     :return:
     """
 
-    area = ee.Geometry(region).area(10).getInfo()
+    area = ee.Geometry(region).area(100).getInfo()
     if area <= 1e8:
-        region = ee.Geometry(region).buffer(ee.Number(area).sqrt())
+        region = ee.Geometry(region).buffer(ee.Number(area).sqrt(), 100)
 
     legger_id = 'users/gertjang/FI_Rijn_Maas_merged_2012_numfdls'
 
