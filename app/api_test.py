@@ -441,36 +441,36 @@ def test_export_satellite_image(client):
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
 
 
-# def test_tile_images_size():
-#     from google.cloud import firestore
-#     db = firestore.Client()
-#     tile_images = db.collection(u's2-tile-cache').list_documents()
-#
-#     count = len(list(tile_images))
-#
-#     assert count > 0
-#
-#
-# def test_get_times_by_tiles(client):
-#     input = '''{
-#       "tilesMin": { "tx": 527, "ty": 338 },
-#       "tilesMax": { "tx": 528, "ty": 339 }
-#     }'''
-#
-#     # randomize coordinate to skip EE caching
-#     r = client.post('/get_times_by_tiles/', data=input, content_type='application/json')
-#
-#     # assert r.status_code == 200
-#
-#     s = r.get_data(as_text=True)
-#
-#     write_test_output('test_output_test_get_times_by_tiles.json', s)
-#
-#     times = json.loads(s)
-#
-#     assert len(times) > 0
+def test_tile_images_size():
+    from google.cloud import firestore
+    db = firestore.Client()
+    tile_images = db.collection(u's2-tile-cache').list_documents()
 
-#
+    count = len(list(tile_images))
+
+    assert count > 0
+
+
+def test_get_times_by_tiles(client):
+    input = '''{
+      "tilesMin": { "tx": 527, "ty": 338 },
+      "tilesMax": { "tx": 528, "ty": 339 }
+    }'''
+
+    # randomize coordinate to skip EE caching
+    r = client.post('/get_times_by_tiles/', data=input, content_type='application/json')
+
+    # assert r.status_code == 200
+
+    s = r.get_data(as_text=True)
+
+    write_test_output('test_output_test_get_times_by_tiles.json', s)
+
+    times = json.loads(s)
+
+    assert len(times) > 0
+
+
 # NOTE: takes about 10 min
 #
 # def test_update_cloudfree_tile_images(client):

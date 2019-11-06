@@ -231,7 +231,7 @@ def _get_landuse(region, date_begin, date_end):
     """
     class_property = 'Legger'
     image_path = 'projects/deltares-rws/vegetatiemonitor/fotointerpretatie-rijn-maas-merged-2017-image-10m'
-    fotointerpretatie = ee.Image(image_path).rename(class_property)
+    landuse_legger = ee.Image(image_path).rename(class_property)
 
     # get an image given region and dates
     images = get_satellite_images(region, date_begin, date_end, False) \
@@ -254,7 +254,7 @@ def _get_landuse(region, date_begin, date_end):
     }
 
     samples = image \
-        .addBands(fotointerpretatie) \
+        .addBands(landuse_legger) \
         .addBands(ahn.divide(100)) \
         .stratifiedSample(**options)
 
@@ -268,7 +268,7 @@ def _get_landuse(region, date_begin, date_end):
     classified = image.classify(classifier)
 
     classified = classified \
-        .updateMask(fotointerpretatie.mask()) \
+        .updateMask(landuse_legger.mask()) \
         .clip(region)
 
     return classified \
