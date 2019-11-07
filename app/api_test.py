@@ -65,35 +65,35 @@ def test_get_zonal_info_legger(client):
     output = sorted(json.loads(s))
 
     output_expected = output_expected = '''[
-        {
-           "id": 1,
-            "area_per_type": [
-              {
-                "area": 1624781.6086224725,
-                "type": "1"
-              },
-              {
-                "area": 252953.091796875,
-                "type": "2"
-              },
-              {
-                "area": 1854597.840469899,
-                "type": "3"
-              },
-              {
-                "area": 682186.362109375,
-                "type": "4"
-              },
-              {
-                "area": 382541.0576171875,
-                "type": "5"
-              },
-              {
-                "area": 104886.63330078125,
-                "type": "6"
-              }
-            ]
-        }
+      {
+        "area_per_type": [
+          {
+            "area": 1913235.4782437193, 
+            "type": "1"
+          }, 
+          {
+            "area": 252756.83199869792, 
+            "type": "2"
+          }, 
+          {
+            "area": 2074772.7392597275, 
+            "type": "3"
+          }, 
+          {
+            "area": 655594.124766391, 
+            "type": "4"
+          }, 
+          {
+            "area": 370192.3486328125, 
+            "type": "5"
+          }, 
+          {
+            "area": 67869.162109375, 
+            "type": "6"
+          }
+        ], 
+        "id": 1
+      }
     ]'''
 
     output_expected = sorted(json.loads(output_expected))
