@@ -229,23 +229,9 @@ def _get_landuse(region, date_begin, date_end):
     :param date_end:
     :return:
     """
-
-    area = ee.Geometry(region).area(100).getInfo()
-    if area <= 1e8:
-        region = ee.Geometry(region).buffer(ee.Number(area).sqrt(), 100)
-
-    legger_id = 'users/gertjang/FI_Rijn_Maas_merged_2012_numfdls'
-
-    legger = ee.FeatureCollection(legger_id)
-
-    class_property = "Legger"
-
-    legger = legger.filter(ee.Filter.neq(class_property, None)) \
-        .map(lambda f: f.set(class_property, ee.Number(f.get(class_property)))) \
-        .remap([8, 9, 1, 2, 3, 4, 10], [1, 2, 3, 4, 5, 6, 2], class_property)
-
-    legger_image = ee.Image().int().paint(legger, class_property) \
-        .rename(class_property)
+    class_property = 'Legger'
+    image_path = 'projects/deltares-rws/vegetatiemonitor/fotointerpretatie-rijn-maas-merged-2017-image-10m'
+    landuse_legger = ee.Image(image_path).rename(class_property)
 
     # get an image given region and dates
     images = get_satellite_images(region, date_begin, date_end, False) \
@@ -268,7 +254,7 @@ def _get_landuse(region, date_begin, date_end):
     }
 
     samples = image \
-        .addBands(legger_image) \
+        .addBands(landuse_legger) \
         .addBands(ahn.divide(100)) \
         .stratifiedSample(**options)
 
@@ -282,7 +268,7 @@ def _get_landuse(region, date_begin, date_end):
     classified = image.classify(classifier)
 
     classified = classified \
-        .updateMask(legger_image.mask()) \
+        .updateMask(landuse_legger.mask()) \
         .clip(region)
 
     return classified \
@@ -381,15 +367,13 @@ def get_landuse_vs_legger(region, date_begin, date_end, vis):
 
 
 def _get_legger_image():
-    legger_features = ee.FeatureCollection('users/gertjang/FI_Rijn_Maas_merged_2012_numfdls')
+    legger_features = ee.FeatureCollection('users/gena/vegetatie-vlakken-geo')
 
-    class_property = "Legger"
+    legger_features = legger_features \
+        .map(lambda f: f.set('type', legger_classes.get(f.get('VL_KLASSE')))) \
+        .filter(ee.Filter.equals('type', 0).Not())
 
-    legger = legger_features.filter(ee.Filter.neq(class_property, None)) \
-        .map(lambda f: f.set('type', ee.Number(f.get(class_property)))) \
-        .remap([8, 9, 1, 2, 3, 4, 10], [1, 2, 3, 4, 5, 6, 2], 'type')
-
-    legger = ee.Image().int().paint(legger, 'type')
+    legger = ee.Image().int().paint(legger_features, 'type')
 
     return legger
 
@@ -879,6 +863,7 @@ def _get_map_times_daily(id, region):
 
     # HACK: return least cloudy images using metadata
     images = ee.ImageCollection('COPERNICUS/S2') \
+        .filterDate(ee.Date(date_begin), ee.Date(date_end)) \
         .select(band_names['s2'], band_names['readable']) \
         .filterBounds(region) \
         .filter(ee.Filter.lte('CLOUDY_PIXEL_PERCENTAGE', 10))
@@ -1393,7 +1378,8 @@ def get_voorspel():
     #     date_end = ee.Date(json['dateEnd'])
 
     scale = 10
-    # json['scale']
+    if 'scale' in json:
+        scale = json['scale']
 
     begin_year = 2018
     num_years = 10
