@@ -23,6 +23,12 @@ definitions:
       - landuse-legger
       - landuse-vs-legger
 
+  MapMode:
+    type: string
+    enum:
+      - daily
+      - yearly
+
   MapUri:
     properties:
       id:
@@ -57,7 +63,8 @@ definitions:
             [5.877,51.990],
             [5.846,51.984]
           ]]
-        }
+        },
+        "scale": 500
       }
     properties:
       region:
@@ -70,6 +77,55 @@ definitions:
         format: date-time
       vis:
         $ref: "#/definitions/ImageVis"
+      scale:
+        type: integer
+
+  MapFilterType:
+    type: object
+    required:
+      - region
+    example:
+      {
+        "dateBegin": "2016-07-20",
+        "dateEnd": "2016-07-21",
+        "scale": 500,
+        "assetType": "day",
+        "region": {
+          "type": "FeatureCollection",
+          "features": [{
+                         "type": "Feature",
+                         "geometry": {
+                           "type": "Polygon",
+                           "coordinates": [
+                           [
+                           [5.846, 51.984],
+                           [5.849, 51.961],
+                           [5.910, 51.960],
+                           [5.916, 51.985],
+                           [5.877, 51.990],
+                           [5.846, 51.984]
+                           ]
+                           ]
+                         },
+                         "properties": {
+                           "id": 1
+                         }
+                       }]
+        }
+      }
+    properties:
+      region:
+        type: string
+      dateBegin:
+        type: string
+        format: date-time
+      dateEnd:
+        type: string
+        format: date-time
+      assetType:
+        type: string
+      scale:
+        type: integer
 
 info:
   description: Queries satellite images, spectral indices, and classifications from Google Earth Engine
@@ -115,39 +171,81 @@ paths:
         - in: path
           name: id
           required: true
-          default: 'satellite'
+          default: 'landuse'
           schema:
             $ref: "#/definitions/MapId"
         - in: body
           name: body
           description: The filter for map request
           schema:
-              $ref: "#/definitions/MapFilter"
+              $ref: "#/definitions/MapFilterType"
       responses:
         200:
           description: Array of zonal statistics per feature or geometry
           examples: [
+          {
+            "id": "feature1",
+            "area_per_type": [
             {
-              "id": "feature1",
-              "area": [
-                "class1": 1000,
-                "class2": 2000,
-                "class3": 3000
-              ]
+              "area": 10000.0,
+              "type": "1"
             },
             {
-              "id": "feature2",
-              "area": [
-                "class1": 1000,
-                "class2": 2000,
-                "class3": 3000
-              ]
+              "area": 20000.0,
+              "type": "2"
+            },
+            {
+              "area": 30000.0,
+              "type": "3"
+            },
+            {
+              "area": 40000.0,
+              "type": "4"
+            },
+            {
+              "area": 50000.0,
+              "type": "5"
+            },
+            {
+              "area": 60000.0,
+              "type": "6"
             }
+            ]
+          },
+          {
+            "id": "feature2",
+            "area_per_type": [
+            {
+              "area": 100.0,
+              "type": "1"
+            },
+            {
+              "area": 200.0,
+              "type": "2"
+            },
+            {
+              "area": 300.0,
+              "type": "3"
+            },
+            {
+              "area": 400.0,
+              "type": "4"
+            },
+            {
+              "area": 500.0,
+              "type": "5"
+            },
+            {
+              "area": 600.0,
+              "type": "6"
+            }
+            ]
+          }
           ]
           schema:
             "$ref": "#/definitions/MapUri"
 
-  /map/{id}/times/:
+  /map/{id}/times/{mode}:
     post:
       consumes:
         - application/json
@@ -162,6 +260,12 @@ paths:
           default: 'satellite'
           schema:
             $ref: "#/definitions/MapId"
+        - in: path
+          name: mode
+          required: true
+          default: 'daily'
+          schema:
+            $ref: "#/definitions/MapMode"
         - in: body
           name: body
           description: The filter for map request
@@ -170,19 +274,23 @@ paths:
       responses:
         200:
           description: Array of image times and image infos
-          examples:
-            {
-              "image_ids": [
-                "COPERNICUS/S2/20160102T110129_20160102T144623_T31UFT",
-                "COPERNICUS/S2/20160102T110129_20160102T144623_T31UGT",
-                "COPERNICUS/S2/20160112T110648_20160112T162938_T31UFT",
-              ],
-              "image_times": [
-                "2016-01-02 11:01",
-                "2016-01-02 11:01",
-                "2016-01-12 11:06",
-              ]
-            }
+          examples: [
+          {
+            "date": "2015-07-16",
+            "dateFormat": "YYYY-MM-DD",
+            "type": "instance"
+          },
+          {
+            "date": "2015-09-11",
+            "dateFormat": "YYYY-MM-DD",
+            "type": "instance"
+          },
+          {
+            "date": "2015-10-01",
+            "dateFormat": "YYYY-MM-DD",
+            "type": "instance"
+          }
+          ]
           schema:
             "$ref": "#/definitions/MapUri"
 
@@ -192,7 +300,7 @@ paths:
         - application/json
       produces:
         - application/json
-      description: For a given region and start/end times, export image as a GeoTIFF
+      description: For a given region, start/end times, and mode, export image as a GeoTIFF
       operationId: exportImage
       parameters:
         - in: path
