@@ -346,8 +346,6 @@ def get_landuse(region, date_begin, date_end, vis):
 
 def _get_landuse_vs_legger(region, date_begin, date_end):
     legger = _get_legger_image()
-    mask = legger.eq([1, 2, 3, 4, 5, 6]).reduce(ee.Reducer.anyNonZero())
-    legger = legger.updateMask(mask)
     # classification
     landuse = _get_landuse(region, date_begin, date_end)
     diff = landuse.subtract(legger)
@@ -367,21 +365,16 @@ def get_landuse_vs_legger(region, date_begin, date_end, vis):
 
 
 def _get_legger_image():
-    legger_features = ee.FeatureCollection('users/gena/vegetatie-vlakken-geo')
-
-    legger_features = legger_features \
-        .map(lambda f: f.set('type', legger_classes.get(f.get('VL_KLASSE')))) \
-        .filter(ee.Filter.equals('type', 0).Not())
-
-    legger = ee.Image().int().paint(legger_features, 'type')
+    legger = ee.Image('projects/deltares-rws/vegetatiemonitor/legger-2012-6-class-10m')\
+        .rename('type')
 
     return legger
 
 
 def get_legger(region, date_begin, date_end, vis):
-    leger = _get_legger_image()
+    legger = _get_legger_image()
 
-    return leger \
+    return legger \
         .sldStyle(legger_style)
 
 
