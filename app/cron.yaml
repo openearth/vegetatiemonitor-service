@@ -1,4 +1,6 @@
 cron:
 - description: "update cloudfree tile images"
   url: /update_cloudfree_tile_images/
-  schedule: every 24 hours
+  schedule: every day 00:00
+  timezone: Europe/Amsterdam
+  target: v2-test
