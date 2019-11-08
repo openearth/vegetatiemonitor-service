@@ -136,7 +136,7 @@ def get_mostly_clean_images(images, g, options=None):
         if 'cloud_frequency_threshold_delta' in options:
             cloud_frequency_threshold_delta = options['cloud_frequency_threshold_delta']
 
-    cloud_frequency = 0.9  # Calculated for the Netherlands, hardcoded for speed
+    cloud_frequency = 0.8  # Calculated for the Netherlands, hardcoded for speed
 
     cloud_frequency = ee.Number(cloud_frequency)
 
@@ -182,9 +182,10 @@ def visualize_image(image, vis):
     return image.visualize(**vis)
 
 
-def get_satellite_image(region, date_begin, date_end, vis):
+def get_satellite_image(region, date_begin, date_end, vis, scale):
     images = get_satellite_images(region, date_begin, date_end, False)
-    image = ee.Image(images.mosaic()).divide(10000)
+    # image = ee.Image(images.mosaic()).divide(10000)
+    image = ee.Image(images.first()).divide(10000)
     image = visualize_image(image, vis)
 
     return image
@@ -199,7 +200,7 @@ def _get_ndvi(date_begin, date_end, region):
     return ndvi
 
 
-def get_ndvi(region, date_begin, date_end, vis):
+def get_ndvi(region, date_begin, date_end, vis, scale):
     ndvi = _get_ndvi(date_begin, date_end, region)
 
     if not vis:
@@ -237,19 +238,22 @@ def _get_landuse(region, date_begin, date_end):
     images = get_satellite_images(region, date_begin, date_end, False) \
         .map(lambda i: i.resample('bilinear'))
 
+    # image = ee.Image(images.mosaic()).divide(10000)
+    # images = get_satellite_images(region, date_begin, date_end, False)
     image = ee.Image(images.mosaic()).divide(10000)
+    # image = ee.Image(images.first()).resample('bicubic').divide(10000) 
 
     # add AHN for classification
     ahn = ee.Image('AHN/AHN2_05M_RUW')
 
     # sample values using stratified sampling
-    number_of_points = 500
+    number_of_points = 00
     options = {
         'numPoints': number_of_points,
         'classBand': class_property,
         'region': region,
-        'scale': 10,
-        'tileScale': 8,
+        'scale': 20,
+        'tileScale': 1,
         'dropNulls': True
     }
 
@@ -258,11 +262,15 @@ def _get_landuse(region, date_begin, date_end):
         .addBands(ahn.divide(100)) \
         .stratifiedSample(**options)
 
+    print('N: ' + str(samples.size().getInfo()))
+
     # train random forest classifier
-    number_of_trees = 15
+    number_of_trees = 6
 
     classifier = ee.Classifier.randomForest(number_of_trees) \
         .train(samples, class_property, image.bandNames())
+
+    accuracy = classifier.confusionMatrix().accuracy()
 
     # classify current image
     classified = image.classify(classifier)
@@ -272,7 +280,9 @@ def _get_landuse(region, date_begin, date_end):
         .clip(region)
 
     return classified \
-        .focal_mode(1)
+        .focal_mode(15, 'circle', 'meters') \
+        .set('accuracy', accuracy)
+
 
 
 def _get_landuse_old(region, date_begin, date_end):
@@ -335,13 +345,18 @@ def _get_landuse_old(region, date_begin, date_end):
     # print('Resubstitution error matrix: ', trainAccuracy);
     # print('Training overall accuracy: ', trainAccuracy.accuracy());
 
+def _get_region_image(region):
+    return ee.FeatureCollection(ee.Geometry(region)).style(**{ 'color': '000000', 'fillColor': '00000020', 'width': 2 })
 
-def get_landuse(region, date_begin, date_end, vis):
+def get_landuse(region, date_begin, date_end, vis, scale=None):
     # get classified as raster
     classified = _get_landuse(region, date_begin, date_end)
 
-    return classified \
-        .sldStyle(legger_style)
+    region_image = _get_region_image(region)
+
+    result = region_image.blend(classified.sldStyle(legger_style))
+
+    return result.set('accuracy', classified.get('accuracy'))
 
 
 def _get_landuse_vs_legger(region, date_begin, date_end):
@@ -351,10 +366,11 @@ def _get_landuse_vs_legger(region, date_begin, date_end):
     # classification
     landuse = _get_landuse(region, date_begin, date_end)
     diff = landuse.subtract(legger)
+
     return diff
 
 
-def get_landuse_vs_legger(region, date_begin, date_end, vis):
+def get_landuse_vs_legger(region, date_begin, date_end, vis, scale=None):
     diff = _get_landuse_vs_legger(region, date_begin, date_end)
 
     # use RWS legger colors
@@ -363,7 +379,9 @@ def get_landuse_vs_legger(region, date_begin, date_end, vis):
 
     diff = diff.visualize(**{'min': -5, 'max': 5, 'palette': palette})
 
-    return diff
+    region_image = _get_region_image(region)
+
+    return region_image.blend(diff)
 
 
 def _get_legger_image():
@@ -378,7 +396,7 @@ def _get_legger_image():
     return legger
 
 
-def get_legger(region, date_begin, date_end, vis):
+def get_legger(region, date_begin, date_end, vis, scale=None):
     leger = _get_legger_image()
 
     return leger \
@@ -763,7 +781,11 @@ def get_map(id):
     """
 
     json = request.get_json()
+
     region = json['region']
+
+    scale = json['scale']
+
     date_begin = json['dateBegin']
     if 'dateEnd' not in json:
         date_end = ee.Date(date_begin).advance(1, 'day')
@@ -776,11 +798,14 @@ def get_map(id):
     if 'vis' in json:
         vis = json['vis']
 
-    image = maps[id](region, date_begin, date_end, vis)
+    image = maps[id](region, date_begin, date_end, vis, scale)
 
     url = get_image_url(image)
 
     results = {'url': url}
+
+    if id == 'landuse':
+        results['accuracy'] = image.get('accuracy').getInfo()
 
     return jsonify(results)
 
@@ -1424,8 +1449,6 @@ def get_times_by_tiles():
 
     tilesMin = json['tilesMin']
     tilesMax = json['tilesMax']
-    print('tilesMin: ', tilesMin)
-    print('tilesMax: ', tilesMax)
 
     tile_images = {}
     # times = set()
