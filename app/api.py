@@ -449,7 +449,7 @@ def export_landuse_vs_legger(region, date_begin, date_end, vis, asset_type):
     if asset_type == 'day':
         image = _get_landuse_vs_legger(region, date_begin, date_end)
     else:
-        images = get_image_collection(yearly_collections["landuse_vs_legger"], region, date_begin, date_end)
+        images = get_image_collection(yearly_collections["landuse-vs-legger"], region, date_begin, date_end)
         image = ee.Image(images.first())
 
     return image
