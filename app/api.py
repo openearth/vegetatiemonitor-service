@@ -184,7 +184,6 @@ def visualize_image(image, vis):
 
 def get_satellite_image(region, date_begin, date_end, vis):
     images = get_satellite_images(region, date_begin, date_end, False)
-    # image = ee.Image(images.mosaic()).divide(10000)
     image = ee.Image(images.first()).divide(10000)
     image = visualize_image(image, vis)
 
