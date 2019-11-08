@@ -54,6 +54,8 @@ legger_classes = {
 }
 
 class_names = list(legger_classes.keys())
+class_values = [1, 2, 3, 4, 5, 6]
+class_roughness = [0.0, 0.15, 0.39, 1.45, 12.84, 24.41]
 
 legger_classes = ee.Dictionary(legger_classes)
 
@@ -613,33 +615,6 @@ legend_remap = {
     }
 }
 
-legend_remap = {
-    "1": {
-        "name": "Water",
-        "color": "#BDEEFF"
-    },
-    "2": {
-        "name": "Verhard oppervlak",
-        "color": "#FF817E"
-    },
-    "3": {
-        "name": "Gras en Akker",
-        "color": "#EEFAD4"
-    },
-    "4": {
-        "name": "Riet en Ruigte",
-        "color": "#DEBDDE"
-    },
-    "5": {
-        "name": "Bos",
-        "color": "#73BF73"
-    },
-    "6": {
-        "name": "Struweel",
-        "color": "#D97A36"
-    }
-}
-
 
 def get_zonal_timeseries_landuse(region, date_begin, date_end, scale):
     features = ee.FeatureCollection(region["features"])
@@ -965,20 +940,19 @@ def get_map_times(id, mode):
     return jsonify(dates)
 
 
-def wet_moist_masks(start_date, feature):
+def wet_moist_masks(start_date, geometry):
     """
     Create mask of wet area (water in Feb-Mar and May-Jun) and moist area (water in Feb-Mar, not May-Jun)
     :param start_date: Date to start moist/wet masking
-    :param feature: feature selected for analysis
+    :param geometry: geometry of feature selected for analysis
     :return:
     """
-    bounds = feature.geometry()
     start_year = ee.Date(start_date).get('year')
     begin_date = ee.Date(start_date).advance(1, 'month')
     lookback = begin_date.advance(-1, 'year')
 
     # get satellite images and filter out clouded images
-    images = get_satellite_images(bounds, lookback, begin_date, True)
+    images = get_satellite_images(geometry, lookback, begin_date, True)
 
     ndwi_bands = ['green', 'nir']
     # Feb-Mar ndwi (wet season)
@@ -1000,7 +974,7 @@ def wet_moist_masks(start_date, feature):
     return moist_mask.addBands(wet_mask).rename(['moistMask', 'wetMask'])
 
 
-def bare_grazing_variables(ecotop_map, bare_to_reed_mask, bare_to_willow_mask):
+def bare_grazing_variables(geometry, bare_to_reed_mask, bare_to_willow_mask):
     """
     Create bands for scaling succession based on management of reed and willow areas
     :param ecotop_map:
@@ -1008,21 +982,19 @@ def bare_grazing_variables(ecotop_map, bare_to_reed_mask, bare_to_willow_mask):
     :param bare_to_willow_mask:
     :return:
     """
-    management_code = 'BEHEER'
-    management_list = ['Onbekend', 'Nauwelijks tot geen beheer', 'Nauwelijks tot geen/extensief beheer',
-                       'Extensief beheer', 'Intensief beheer', 'Kunstmatig hard substraat', 'Water']
+    beheer_image = ee.Image('users/rogersckw9/ecotoop/ecotoop-maps-beheer/ecotoop-beheer-2012').clip(geometry)
+    management_codes = [0, 1, 2, 3, 4, 5, 6]
     reed_grazing = [0, 100, 100, 100, 70, 0, 0]
     willow_grazing_a = [0, 50, 50, 230, 280, 0, 0]
     willow_grazing_b = [0, 57, 57, 57, 60, 0, 0]
 
-    reed_grazing = ecotop_map.remap(management_list, reed_grazing, management_code)
-    willow_grazing_a = ecotop_map.remap(management_list, willow_grazing_a, management_code)
-    willow_grazing_b = ecotop_map.remap(management_list, willow_grazing_b, management_code)
+    reed_grazing = beheer_image.remap(management_codes, reed_grazing)
+    willow_grazing_a = beheer_image.remap(management_codes, willow_grazing_a)
+    willow_grazing_b = beheer_image.remap(management_codes, willow_grazing_b)
 
-    reed_grazing_image = ee.Image().int().paint(reed_grazing, management_code).divide(100)
-    willow_grazing_a_image = ee.Image().int().paint(willow_grazing_a, management_code).multiply(bare_to_willow_mask)
-    willow_grazing_b_image = ee.Image().int().paint(willow_grazing_b, management_code).divide(100).updateMask(
-        bare_to_willow_mask)
+    reed_grazing_image = reed_grazing.divide(100)
+    willow_grazing_a_image = willow_grazing_a.multiply(bare_to_willow_mask)
+    willow_grazing_b_image = willow_grazing_b.divide(100).updateMask(bare_to_willow_mask)
 
     return reed_grazing_image.addBands(willow_grazing_a_image).addBands(willow_grazing_b_image) \
         .rename(['bareToReedGrazing', 'bareToWillowGrazingA', 'bareToWillowGrazingB'])
@@ -1041,27 +1013,29 @@ def willow_function(a, b, t):
     k_value = ee.Image(25.41).divide(ee.Image(1.0).add(ee.Image(a).multiply(ee.Image(b).pow(ee.Number(ee.Image(t))))))
     return k_value
 
+def split_class_image(image):
+    split_image = image.updateMask(image.eq(class_roughness[0])) \
+        .addBands(image.updateMask(image.eq(class_roughness[1]))) \
+        .addBands(image.updateMask(image.eq(class_roughness[2]))) \
+        .addBands(image.updateMask(image.eq(class_roughness[3]))) \
+        .addBands(image.updateMask(image.eq(class_roughness[4]))) \
+        .addBands(image.updateMask(image.eq(class_roughness[5]))) \
+        .rename(['waterRoughness', 'bareRoughness', 'grassRoughness',
+                 'herbaceousRoughness', 'forestRoughness', 'willowRoughness'])
+    return split_image
 
-def prepare_voorspel_data(image, ecotop_features, grass_pct, herb_pct, willow_pct, feature, start_date, years):
+def prepare_voorspel_data(image, geometry, grass_pct, herb_pct, willow_pct, start_date, years):
     """
 
     :param image:
-    :param ecotop_features:
+    :param geometry:
     :param grass_pct:
     :param herb_pct:
     :param willow_pct:
-    :param feature:
     :param start_date:
     :param years:
     :return:
     """
-
-    class_values = [1, 2, 3, 4, 5, 6]
-    class_roughness = [0.0, 0.15, 0.39, 1.45, 12.84, 24.41]
-
-    # Convert image from classes to roughness
-    image = image.remap(class_values, class_roughness)
-
     # Specify roughness value image for each class
     k_water = ee.Number(class_roughness[0])
     k_bare = ee.Number(class_roughness[1])
@@ -1071,12 +1045,7 @@ def prepare_voorspel_data(image, ecotop_features, grass_pct, herb_pct, willow_pc
     k_forest = ee.Number(class_roughness[4])
     k_willow = ee.Number(class_roughness[5])
 
-    k_water_im = ee.Image(k_water)
-    k_bare_im = ee.Image(k_bare)
-    k_grass_im = ee.Image(k_grass)
-    k_herbaceous_im = ee.Image(k_herbaceous)
     k_reed_im = ee.Image(k_reed)
-    k_forest_im = ee.Image(k_forest)
     k_willow_im = ee.Image(k_willow)
 
     # Rates for progression from one class to another.
@@ -1086,41 +1055,26 @@ def prepare_voorspel_data(image, ecotop_features, grass_pct, herb_pct, willow_pc
     herb_to_willow_rate = k_willow.subtract(k_herbaceous).divide(10)
     willow_to_forest_rate = k_forest.subtract(k_willow).divide(10)
 
-    # Shoreline roughness image @ t=0
-    first_roughness_image = k_water_im.updateMask(image.eq(k_water)) \
-        .addBands(k_bare_im.updateMask(image.eq(k_bare))) \
-        .addBands(k_grass_im.updateMask(image.eq(k_grass))) \
-        .addBands(k_herbaceous_im.updateMask(image.eq(k_herbaceous))) \
-        .addBands(k_forest_im.updateMask(image.eq(k_forest))) \
-        .addBands(k_willow_im.updateMask(image.eq(k_willow))) \
-        .rename(['waterRoughness', 'bareRoughness', 'grassRoughness',
-                 'herbaceousRoughness', 'forestRoughness', 'willowRoughness']) \
-        .set('system:time_start', start_date)
+    # roughness image @ t=0
+    first_roughness_image = split_class_image(image).set('system:time_start', start_date)
 
     #
-    moisture_masks = wet_moist_masks(start_date, feature)
+    moisture_masks = wet_moist_masks(start_date, geometry)
     wet_mask = moisture_masks.select('wetMask')
     moist_mask = moisture_masks.select('moistMask')
 
-    # Mechanical dynamics from ecotoop layers
-    mech_dyn_list = ['Onbekend', 'Gering dynamisch', 'Matig/gering dynamisch', 'Sterk/matig dynamisch',
-                     'Sterk dynamisch']
-    ecotoop_mech_dyn = ecotop_features.remap(mech_dyn_list, [0, 1, 2, 3, 4], 'MECH_DYN')
-
-    mech_dyn_im = ee.Image().int().paint(ecotoop_mech_dyn, 'MECH_DYN')
+    mech_dyn_im = ee.Image('users/rogersckw9/ecotoop/ecotoop-maps-mechanical-dynamics/ecotoop-mechanical-dynamics-2012')
     weak_dynamics = mech_dyn_im.lte(1)
     moderate_dynamics = mech_dyn_im.eq(2)
-    strong_dynamics = mech_dyn_im.gte(3)
 
     # bare remain bare with strong dynamics
-    remain_bare = image.eq(k_bare).multiply(strong_dynamics);
     # bare will change to reed in 2 yr if it is wet and weak dynamics
     bare_to_reed_mask = image.eq(k_bare).multiply(wet_mask).multiply(weak_dynamics)
     # bare will change to willow if moist and moderate dynamics
     bare_to_willow_mask = image.eq(k_bare).multiply(moist_mask).multiply(moderate_dynamics)
 
     # Grazing/management will affect the rate at which bare progresses
-    bare_grazing_im = bare_grazing_variables(ecotop_features, bare_to_reed_mask, bare_to_willow_mask)
+    bare_grazing_im = bare_grazing_variables(geometry, bare_to_reed_mask, bare_to_willow_mask)
     bare_to_reed_mask = bare_to_reed_mask.multiply(bare_grazing_im.select('bareToReedGrazing'))
     max_reed_im = k_reed_im.multiply(bare_to_reed_mask)
 
@@ -1184,15 +1138,14 @@ def prepare_voorspel_data(image, ecotop_features, grass_pct, herb_pct, willow_pc
 
     year_array = ee.List.sequence(1, years, 1)
     # Create an ImageCollection of images by iterating.
-    # blank_collection = ee.ImageCollection([first_roughness_image])
     blank_collection = ee.List([first_roughness_image])
 
-    # cumulative_images = year_array.iterate(accumulate_roughness, blank_collection)
     cumulative_images = ee.ImageCollection(ee.List(year_array.iterate(accumulate_roughness, blank_collection)))
     return cumulative_images
 
 
 def calculate_total_roughness(image):
+    classified_image = ee.Image('users/rogersckw9/vegetatiemonitor/yearly-classified-images/classified-image-2019')
     image = ee.Image(image)
     water_rough = image.select('waterRoughness').unmask()
     bare_rough = image.select('bareRoughness').unmask()
@@ -1201,28 +1154,28 @@ def calculate_total_roughness(image):
     forest_rough = image.select('forestRoughness').unmask()
     willow_rough = image.select('willowRoughness').unmask()
     total = water_rough.add(bare_rough).add(grass_rough) \
-        .add(herb_rough).add(forest_rough).add(willow_rough)
+        .add(herb_rough).add(forest_rough).add(willow_rough).mask(classified_image)
     return ee.Image(total) \
         .set('system:time_start', ee.Date(image.get('system:time_start'))) \
-        .rename('voorspeldeRuwheid')
+        .rename('voorspellingRuwheid')
 
 
 def merge_roughness_regions(classified_image, images_shoreline, images_terrestrial, image_no_succession):
+
     def combine_images(i):
         image1 = ee.Image(i).unmask()
         image2 = ee.Image(images_terrestrial.filterDate(image1.get('system:time_start')).first()).unmask()
         image3 = ee.Image(image_no_succession).unmask()
-        water_rough = image1.select('waterRoughness').add(image2.select('waterRoughness'))
-        # water_rough = water_rough.updateMask(water_rough.neq(0))
-        bare_rough = image1.select('bareRoughness').add(image2.select('bareRoughness')).add(image3.eq(0.15))
+        water_rough = image1.select('waterRoughness').add(image2.select('waterRoughness')).add(image3.select('waterRoughness'))
+        bare_rough = image1.select('bareRoughness').add(image2.select('bareRoughness')).add(image3.select('bareRoughness'))
         bare_rough = bare_rough.updateMask(bare_rough.neq(0))
-        grass_rough = image1.select('grassRoughness').add(image2.select('grassRoughness')).add(image3.eq(0.39))
+        grass_rough = image1.select('grassRoughness').add(image2.select('grassRoughness')).add(image3.select('grassRoughness'))
         grass_rough = grass_rough.updateMask(grass_rough.neq(0))
-        herb_rough = image1.select('herbaceousRoughness').add(image2.select('herbaceousRoughness')).add(image3.eq(1.45))
+        herb_rough = image1.select('herbaceousRoughness').add(image2.select('herbaceousRoughness')).add(image3.select('herbaceousRoughness'))
         herb_rough = herb_rough.updateMask(herb_rough.neq(0))
-        forest_rough = image1.select('forestRoughness').add(image2.select('forestRoughness')).add(image3.eq(12.84))
+        forest_rough = image1.select('forestRoughness').add(image2.select('forestRoughness')).add(image3.select('forestRoughness'))
         forest_rough = forest_rough.updateMask(forest_rough.neq(0))
-        willow_rough = image1.select('willowRoughness').add(image2.select('willowRoughness')).add(image3.eq(24.41))
+        willow_rough = image1.select('willowRoughness').add(image2.select('willowRoughness')).add(image3.select('willowRoughness'))
         willow_rough = willow_rough.updateMask(willow_rough.neq(0))
         total = water_rough.addBands(bare_rough).addBands(grass_rough) \
             .addBands(herb_rough).addBands(forest_rough).addBands(willow_rough)
@@ -1237,23 +1190,14 @@ def merge_roughness_regions(classified_image, images_shoreline, images_terrestri
 
 
 def predict_roughness(region, start_date, num_years):
-    # start_date = ee.Date(startYearString + '-11-01')
     feature = ee.FeatureCollection(region["features"]).first()
-    ecotop_features = ee.FeatureCollection("users/gertjang/succession/ecotopen_cyclus_drie_rijntakken_utm31n")
+    geometry = feature.geometry()
     classified_images = ee.ImageCollection('users/rogersckw9/vegetatiemonitor/yearly-classified-images')
     start_year = ee.Date(start_date).get('year')
-    lookback = start_date.advance(-1, 'year')
 
-    # Hydrology from ecotop layers
-    ecotop_hydrology = ecotop_features.remap(
-        ['Onbekend', 'Overstromingsvrij', 'Periodiek tot zelden overstroomd', 'Oever - vochtig',
-         'Oever - drassig/vochtig', 'Oever - drassig', 'Oever - nat/drassig/vochtig', 'Oever - nat',
-         'Ondiep', 'Matig diep', 'Diep', 'Zeer diep/diep'],
-        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-        'HYDROLOGIE'
-    )
+    hydrologie_image = ee.Image('users/rogersckw9/ecotoop/ecotoop-maps-hydrology/ecotoop-hydrology-2012').clip(geometry)
 
-    hydrologie_image = ee.Image().int().paint(ecotop_hydrology, 'HYDROLOGIE')
+    # hydrologie_image = ee.Image().int().paint(ecotop_hydrology, 'HYDROLOGIE')
     shoreline = hydrologie_image.gte(3).And(hydrologie_image.lte(7))
     terrestrial = hydrologie_image.lte(2)
     no_succession = hydrologie_image.gte(8)
@@ -1261,13 +1205,10 @@ def predict_roughness(region, start_date, num_years):
     # Prepare starting Image
     classified_image = ee.Image(classified_images.filterDate(
         ee.Date.fromYMD(start_year, 1, 1),
-        ee.Date.fromYMD(start_year, 12, 31)).first()
-                                )
-    roughness_image = classified_image.remap([1, 2, 3, 4, 5, 6], [0.0, 0.15, 0.39, 1.45, 12.84, 24.41]).rename(
-        "predicted")
-    classified_image_shore = classified_image.updateMask(shoreline)
-    classified_image_terrestrial = classified_image.updateMask(terrestrial)
-    classified_image_no_succession = classified_image.updateMask(no_succession)
+        ee.Date.fromYMD(start_year, 12, 31)).first()).clip(geometry)
+    roughness_image = classified_image.remap(class_values, class_roughness).rename("predicted")
+    roughness_image_shore = roughness_image.updateMask(shoreline)
+    roughness_image_terrestrial = roughness_image.updateMask(terrestrial)
     roughness_no_succession = roughness_image.updateMask(no_succession)
 
     # Shoreline Evolution Rates
@@ -1278,12 +1219,11 @@ def predict_roughness(region, start_date, num_years):
     # 10% of shrubs will change into forest in 10 yr
     willow_to_forest = ee.Number(0.1)
 
-    cumulative_shore = prepare_voorspel_data(classified_image_shore,
-                                             ecotop_features,
+    cumulative_shore = prepare_voorspel_data(roughness_image_shore,
+                                             geometry,
                                              grass_to_herb,
                                              herb_to_willow,
                                              willow_to_forest,
-                                             feature,
                                              start_date,
                                              num_years)
 
@@ -1295,17 +1235,18 @@ def predict_roughness(region, start_date, num_years):
     willow_to_forest = ee.Number(0.2)
     # Forrest remains forest
 
-    cumulative_terrestrial = prepare_voorspel_data(classified_image_terrestrial,
-                                                   ecotop_features,
+    cumulative_terrestrial = prepare_voorspel_data(roughness_image_terrestrial,
+                                                   geometry,
                                                    grass_to_herb,
                                                    herb_to_willow,
                                                    willow_to_forest,
-                                                   feature,
                                                    start_date,
                                                    num_years)
 
+    rough_no_succession_split = split_class_image(roughness_no_succession)
+
     total_roughness_images = merge_roughness_regions(classified_image, cumulative_shore, cumulative_terrestrial,
-                                                     roughness_no_succession)
+                                                     rough_no_succession_split)
     return total_roughness_images
 
 
@@ -1313,25 +1254,16 @@ def get_roughness_info(prediction_images):
     def add_date(i):
         return i.set('system:time_start', ee.Date(i.get('system:time_start')))
 
-    # def mask_images(i):
-    #     return i.mask(i.neq(0)).rename("voorspeldeRuwheid")
-
     def class_to_roughness(i):
-        class_values = [1, 2, 3, 4, 5, 6]
-        class_roughness = [0.0, 0.15, 0.39, 1.45, 12.84, 24.41]
         return i.remap(class_values, class_roughness).rename("ruwheid")
 
-    predict_start = ee.Date('2019-06-01')
+    predict_start = ee.Date('2020-06-01')
     prediction_images = prediction_images.map(add_date)
     prediction_images = prediction_images.filterDate(predict_start, predict_start.advance(10, 'years'))
 
-    # ecotop_features = ee.FeatureCollection("users/gertjang/succession/ecotopen_cyclus_drie_rijntakken_utm31n")
     image_collection = ee.ImageCollection('users/rogersckw9/vegetatiemonitor/yearly-classified-images')
     empty = ee.Image().set("system:time_start", ee.Date("2012-06-01").millis()).rename("ruwheid")
     image_collection = image_collection.merge(ee.ImageCollection([empty])).sort("system:time_start")
-    # ecotopen_images = ecotopen_images.map(add_date)
-    # ecotopen_images = ecotopen_images.map(class_to_roughness)
-    # ecotopen_images = ecotopen_images.select(['remapped'], ['ecotoop'])
 
     # filter collection only on growth season for display
     image_collection = image_collection.map(add_date)
@@ -1366,10 +1298,14 @@ def get_voorspel_timeseries(region, collection, scale):
         },
         "series": []
     }]
+    colors = {
+        "ruwheid": "#21618C",
+        "voorspellingRuwheid": "#F39C12"
+    }
 
     all_keys = set().union(*(d.keys() for d in info))
     for key in all_keys:
-        timeseries[0]["series"].append({"name": key, "data": [], "type": "line"})
+        timeseries[0]["series"].append({"name": key, "data": [], "type": "line", "color": colors[key]})
 
     for time, value in zip(times, info):
         for k, key in enumerate(all_keys):
@@ -1390,21 +1326,12 @@ def get_voorspel():
     json = request.get_json()
 
     region = json['region']
-    # classified_images =
-    # date_begin = None
-    # date_end = None
-    #
-    # if 'dateBegin' in json:
-    #     date_begin = ee.Date(json['dateBegin'])
-    #
-    # if 'dateEnd' in json:
-    #     date_end = ee.Date(json['dateEnd'])
 
     scale = 10
     if 'scale' in json:
         scale = json['scale']
 
-    begin_year = 2018
+    begin_year = 2019
     num_years = 10
     start_date = ee.Date.fromYMD(begin_year, 6, 1)
     future_roughness_images = predict_roughness(region, start_date, num_years)
