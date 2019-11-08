@@ -247,7 +247,7 @@ def _get_landuse(region, date_begin, date_end):
     ahn = ee.Image('AHN/AHN2_05M_RUW')
 
     # sample values using stratified sampling
-    number_of_points = 00
+    number_of_points = 200
     options = {
         'numPoints': number_of_points,
         'classBand': class_property,
