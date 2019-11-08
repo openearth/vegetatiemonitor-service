@@ -623,4 +623,4 @@ def test_voorspel(client):
     s = r.get_data(as_text=True)
     write_test_output('test_output_voorspel.json', s)
     output = sorted(json.loads(s))
-    assert output[0]["series"][0]["data"][20] == pytest.approx(3.9, 0.1)
+    assert output[0]["series"][1]["data"][20] == pytest.approx(3.9, 0.1)
