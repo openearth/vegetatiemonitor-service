@@ -182,7 +182,7 @@ def visualize_image(image, vis):
     return image.visualize(**vis)
 
 
-def get_satellite_image(region, date_begin, date_end, vis, scale):
+def get_satellite_image(region, date_begin, date_end, vis):
     images = get_satellite_images(region, date_begin, date_end, False)
     # image = ee.Image(images.mosaic()).divide(10000)
     image = ee.Image(images.first()).divide(10000)
@@ -200,7 +200,7 @@ def _get_ndvi(date_begin, date_end, region):
     return ndvi
 
 
-def get_ndvi(region, date_begin, date_end, vis, scale):
+def get_ndvi(region, date_begin, date_end, vis):
     ndvi = _get_ndvi(date_begin, date_end, region)
 
     if not vis:
@@ -348,7 +348,7 @@ def _get_landuse_old(region, date_begin, date_end):
 def _get_region_image(region):
     return ee.FeatureCollection(ee.Geometry(region)).style(**{ 'color': '000000', 'fillColor': '00000020', 'width': 2 })
 
-def get_landuse(region, date_begin, date_end, vis, scale=None):
+def get_landuse(region, date_begin, date_end, vis):
     # get classified as raster
     classified = _get_landuse(region, date_begin, date_end)
 
@@ -370,7 +370,7 @@ def _get_landuse_vs_legger(region, date_begin, date_end):
     return diff
 
 
-def get_landuse_vs_legger(region, date_begin, date_end, vis, scale=None):
+def get_landuse_vs_legger(region, date_begin, date_end, vis):
     diff = _get_landuse_vs_legger(region, date_begin, date_end)
 
     # use RWS legger colors
@@ -396,7 +396,7 @@ def _get_legger_image():
     return legger
 
 
-def get_legger(region, date_begin, date_end, vis, scale=None):
+def get_legger(region, date_begin, date_end, vis):
     leger = _get_legger_image()
 
     return leger \
@@ -784,8 +784,6 @@ def get_map(id):
 
     region = json['region']
 
-    scale = json['scale']
-
     date_begin = json['dateBegin']
     if 'dateEnd' not in json:
         date_end = ee.Date(date_begin).advance(1, 'day')
@@ -798,7 +796,7 @@ def get_map(id):
     if 'vis' in json:
         vis = json['vis']
 
-    image = maps[id](region, date_begin, date_end, vis, scale)
+    image = maps[id](region, date_begin, date_end, vis)
 
     url = get_image_url(image)
 
