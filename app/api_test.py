@@ -145,33 +145,34 @@ def test_get_zonal_info_landuse_daily(client):
       {
         "area_per_type": [
           {
-            "area": 2223256.0580882356, 
+            "area": 1398707.6398418352, 
             "type": "1"
           }, 
           {
-            "area": 1341505.026518459, 
+            "area": 912306.2397269455, 
             "type": "2"
           }, 
           {
-            "area": 2087933.2076344208, 
+            "area": 1683039.9216605392, 
             "type": "3"
           }, 
           {
-            "area": 627820.696160769, 
+            "area": 1055078.8823242188, 
             "type": "4"
           }, 
           {
-            "area": 333196.79345703125, 
+            "area": 524470.99609375, 
             "type": "5"
           }, 
           {
-            "area": 314669.0810546875, 
+            "area": 438064.32763671875, 
             "type": "6"
           }
         ], 
         "id": 1
       }
-    ]'''
+    ]
+    '''
 
     output_expected = sorted(json.loads(output_expected))
 
@@ -620,8 +621,5 @@ def test_voorspel(client):
                     content_type='application/json')
 
     assert r.status_code == 200
-    #
-    # s = r.get_data(as_text=True)
-    # output = sorted(json.loads(s))
-    # print(output)
-    # assert output[0]["series"][0]["data"][0] == 1.6977447813586202
+    s = r.get_data(as_text=True)
+    write_test_output('test_output_voorspel.json', s)
