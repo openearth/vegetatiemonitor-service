@@ -626,49 +626,69 @@ def test_voorspel(client):
     # print(output)
     # assert output[0]["series"][0]["data"][0] == 1.6977447813586202
 
-def test_zonal_info_day(client):
+def test_zonal_info_day_new(client):
     input = '''{
         "dateBegin": "2020-02-07",
         "dateEnd": "2020-02-08",
-        "assetType": day,
+        "assetType": "day",
         "region": {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "geodesic": true,
+                    "coordinates": [
+                        [
+                            [5.373105990790918, 51.824388007789565],
+                            [5.373105990790918, 51.80340702805009],
+                            [5.431313931335808, 51.80340702805009],
+                            [5.431313931335808, 51.824388007789565],
+                            [5.373105990790918, 51.824388007789565]
+                        ]
+                    ]
+                }
+            }]
+        },
+        "vis": {},
+        "scale": 10,
+        "mapExtent": {
             "type": "Polygon",
             "geodesic": true,
             "coordinates": [
                 [
-                    [5.373105990790918, 51.824388007789565],
-                    [5.373105990790918, 51.80340702805009],
-                    [5.431313931335808, 51.80340702805009],
-                    [5.431313931335808, 51.824388007789565],
-                    [5.373105990790918, 51.824388007789565]
+                    [5.341700628234435, 51.839042851512716],
+                    [5.341700628234435, 51.801371821970946],
+                    [5.446226740375749, 51.801371821970946],
+                    [5.446226740375749, 51.839042851512716],
+                    [5.341700628234435, 51.839042851512716]
                 ]
             ]
-        },
-        "vis": {}
+        }
     }'''
 
     r = client.post('/map/landuse/zonal-info/', data=input,
                     content_type='application/json')
 
-    assert
+    # assert
     assert r.status_code == 200
 
     s = r.get_data(as_text=True)
-    write_test_output('test_output_zonal_landuse.json', s)
+    write_test_output('test_output_zonal_landuse_new.json', s)
 
     output = sorted(json.loads(s))
 
-    output_expected = '''[}'''
-    received_output = '''[{
-        "area_per_type": [{
-            "area": 24317.72341709512,
-            "type": "1"
-        }, {
-            "area": 2057.5942137923894,
-            "type": "2"
-        }, {
-            "area": 506.94514725629017,
-            "type": "3"
-        }],
-        "id": 1
-    }]'''
+    # output_expected = '''[}'''
+    # received_output = '''[{
+    #     "area_per_type": [{
+    #         "area": 24317.72341709512,
+    #         "type": "1"
+    #     }, {
+    #         "area": 2057.5942137923894,
+    #         "type": "2"
+    #     }, {
+    #         "area": 506.94514725629017,
+    #         "type": "3"
+    #     }],
+    #     "id": 1
+    # }]'''

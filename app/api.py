@@ -476,10 +476,10 @@ def _get_zonal_info(features, image, scale):
     return features.toList(5000).map(get_feature_info)
 
 
-def get_zonal_info_landuse(region, date_begin, date_end, scale, asset_type):
+def get_zonal_info_landuse(region, date_begin, date_end, scale, asset_type, map_extent):
     features = ee.FeatureCollection(region["features"])
     if asset_type == 'day':
-        image = _get_landuse(features.geometry(), date_begin, date_end)
+        image = _get_landuse(map_extent, date_begin, date_end)
     else:
         images = get_image_collection(yearly_collections['landuse'], features.geometry(), date_begin, date_end)
         image = ee.Image(images.first())
@@ -489,15 +489,15 @@ def get_zonal_info_landuse(region, date_begin, date_end, scale, asset_type):
     return info.getInfo()
 
 
-def get_zonal_info_landuse_vs_legger(region, date_begin, date_end, scale, asset_type):
+def get_zonal_info_landuse_vs_legger(region, date_begin, date_end, scale, asset_type, map_extent):
     pass
 
 
-def get_zonal_info_ndvi(region, date_begin, date_end, scale, asset_type):
+def get_zonal_info_ndvi(region, date_begin, date_end, scale, asset_type, map_extent):
     pass
 
 
-def get_zonal_info_legger(region, date_begin, date_end, scale, asset_type):
+def get_zonal_info_legger(region, date_begin, date_end, scale, asset_type, map_extent):
     features = ee.FeatureCollection(region["features"])
 
     image = _get_legger_image()
@@ -811,9 +811,11 @@ def get_map_zonal_info(id):
     if 'dateEnd' in json:
         date_end = ee.Date(json['dateEnd'])
 
-    scale = json['scale']
 
-    info = zonal_info[id](region, date_begin, date_end, scale, asset_type)
+    scale = json['scale']
+    map_extent = json.get('mapExtent', None)
+
+    info = zonal_info[id](region, date_begin, date_end, scale, asset_type, map_extent)
 
     return jsonify(info)
 
