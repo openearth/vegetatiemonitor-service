@@ -348,7 +348,7 @@ def _get_landuse_vs_legger(region, date_begin, date_end):
     legger = _get_legger_image()
     # classification
     landuse = _get_landuse(region, date_begin, date_end)
-    diff = landuse.subtract(legger)
+    diff = landuse.subtract(legger).int32()
     return diff
 
 
