@@ -625,3 +625,50 @@ def test_voorspel(client):
     # output = sorted(json.loads(s))
     # print(output)
     # assert output[0]["series"][0]["data"][0] == 1.6977447813586202
+
+def test_zonal_info_day(client):
+    input = '''{
+        "dateBegin": "2020-02-07",
+        "dateEnd": "2020-02-08",
+        "assetType": day,
+        "region": {
+            "type": "Polygon",
+            "geodesic": true,
+            "coordinates": [
+                [
+                    [5.373105990790918, 51.824388007789565],
+                    [5.373105990790918, 51.80340702805009],
+                    [5.431313931335808, 51.80340702805009],
+                    [5.431313931335808, 51.824388007789565],
+                    [5.373105990790918, 51.824388007789565]
+                ]
+            ]
+        },
+        "vis": {}
+    }'''
+
+    r = client.post('/map/landuse/zonal-info/', data=input,
+                    content_type='application/json')
+
+    assert
+    assert r.status_code == 200
+
+    s = r.get_data(as_text=True)
+    write_test_output('test_output_zonal_landuse.json', s)
+
+    output = sorted(json.loads(s))
+
+    output_expected = '''[}'''
+    received_output = '''[{
+        "area_per_type": [{
+            "area": 24317.72341709512,
+            "type": "1"
+        }, {
+            "area": 2057.5942137923894,
+            "type": "2"
+        }, {
+            "area": 506.94514725629017,
+            "type": "3"
+        }],
+        "id": 1
+    }]'''
