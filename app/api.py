@@ -459,7 +459,7 @@ def _get_zonal_info(features, image, scale):
             o = ee.Dictionary(o)
 
             t = ee.Number(o.get('type')).format('%d')
-            area = o.get('sum')
+            area = ee.Number(o.get('sum')).round()
 
             return {
                 "type": t,
