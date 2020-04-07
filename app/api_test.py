@@ -401,6 +401,40 @@ def test_export_landuse_vs_legger(client):
     assert 'https://earthengine.googleapis.com/api/download' in output['url']
 
 
+def test_export_landuse_vs_legger_yearly(client):
+    input = '''{
+        "region": {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [5.2810800397131175, 51.89361350551749],
+                    [5.2810800397131175, 51.822663250799934],
+                    [5.493220150775187, 51.822663250799934],
+                    [5.493220150775187, 51.89361350551749],
+                    [5.2810800397131175, 51.89361350551749]
+                ]
+            ]
+        },
+        "dateBegin": "2018-01-01",
+        "dateEnd": "2019-01-01",
+        "assetType": "year",
+        "vis": {},
+        "scale": 10
+    }'''
+
+    r = client.post('/map/landuse-vs-legger/export/', data=input,
+                    content_type='application/json')
+
+    assert r.status_code == 200
+
+    output = json.loads(r.get_data(as_text=True))
+
+    write_test_output('test_output_export_landuse_vs_legger_yearly.json', r.get_data(as_text=True))
+
+    # https://earthengine.googleapis.com/api/download?docid=e14ce2ae37ba788858184239bfc6f8da&token=a1e12add29abf9abcbc11999db92c07e
+    assert 'https://earthengine.googleapis.com/api/download' in output['url']
+
+
 def test_export_satellite_image(client):
     input = '''{
        "dateBegin": "2016-07-20",
