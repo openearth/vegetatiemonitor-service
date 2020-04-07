@@ -626,6 +626,7 @@ def test_voorspel(client):
     # print(output)
     # assert output[0]["series"][0]["data"][0] == 1.6977447813586202
 
+
 def test_zonal_info_day_new(client):
     input = '''{
         "dateBegin": "2020-02-07",
@@ -678,17 +679,24 @@ def test_zonal_info_day_new(client):
 
     output = sorted(json.loads(s))
 
-    # output_expected = '''[}'''
-    # received_output = '''[{
-    #     "area_per_type": [{
-    #         "area": 24317.72341709512,
-    #         "type": "1"
-    #     }, {
-    #         "area": 2057.5942137923894,
-    #         "type": "2"
-    #     }, {
-    #         "area": 506.94514725629017,
-    #         "type": "3"
-    #     }],
-    #     "id": 1
-    # }]'''
+    expected_output = '''[{
+        "area_per_type": [{
+            "area": 124300,
+            "type": "1"
+        }, {
+            "area": 4805,
+            "type": "2"
+        }, {
+            "area": 1052,
+            "type": "3"
+        }, {
+            "area": 1152,
+            "type": "4"
+        }, {
+            "area": 395,
+            "type": "6"
+        }],
+        "id": 1
+    }]'''
+
+    assert expected_output == output
