@@ -889,7 +889,7 @@ def _get_map_times_daily(id, region):
 
 def _get_map_times_yearly(id, region):
     date_begin = datetime(2000, 1, 1, 0, 0, 0)
-    date_end = datetime(2019, 1, 1, 0, 0, 0)
+    date_end = datetime.now()
 
     images = get_image_collection(yearly_collections[id], region, date_begin, date_end)
 
