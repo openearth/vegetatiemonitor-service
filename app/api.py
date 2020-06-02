@@ -136,7 +136,7 @@ def get_mostly_clean_images(images, g, options=None):
         if 'cloud_frequency_threshold_delta' in options:
             cloud_frequency_threshold_delta = options['cloud_frequency_threshold_delta']
 
-    cloud_frequency = 0.9  # Calculated for the Netherlands, hardcoded for speed
+    cloud_frequency = 0.7  # Calculated for the Netherlands, hardcoded for speed
 
     cloud_frequency = ee.Number(cloud_frequency)
 
