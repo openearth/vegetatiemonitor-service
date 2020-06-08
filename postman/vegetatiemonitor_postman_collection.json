@@ -1,12 +1,26 @@
 {
 	"info": {
-		"_postman_id": "c61b0b59-8444-46e6-a104-b2108aeddd5c",
+		"_postman_id": "2e2dce82-4676-46c5-9dcd-84b02d815d41",
 		"name": "Vegetatie Monitor",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
 			"name": "map/landuse/times/yearly",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "bbffdee2-26a3-4485-804e-3ce303254d8c",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -19,7 +33,10 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\"region\": {\n    \"coordinates\": [\n      [\n        [\n          5.846,\n          51.984\n        ],\n        [\n          5.849,\n          51.961\n        ],\n        [\n          5.91,\n          51.96\n        ],\n        [\n          5.916,\n          51.985\n        ],\n        [\n          5.877,\n          51.99\n        ],\n        [\n          5.846,\n          51.984\n        ]\n      ]\n    ],\n    \"geodesic\": true,\n    \"type\": \"Polygon\"\n  }\n}"
+					"raw": "{\n\"region\": {\n    \"coordinates\": [\n      [\n        [\n          5.846,\n          51.984\n        ],\n        [\n          5.849,\n          51.961\n        ],\n        [\n          5.91,\n          51.96\n        ],\n        [\n          5.916,\n          51.985\n        ],\n        [\n          5.877,\n          51.99\n        ],\n        [\n          5.846,\n          51.984\n        ]\n      ]\n    ],\n    \"geodesic\": true,\n    \"type\": \"Polygon\"\n  }\n}",
+					"options": {
+						"raw": {}
+					}
 				},
 				"url": {
 					"raw": "{{baseUrl}}/map/landuse/times/yearly",
@@ -38,6 +55,20 @@
 		},
 		{
 			"name": "map/satellite/times/daily",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d56b2ceb-d3a5-4e99-9e35-6980bdb94d32",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -50,7 +81,10 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\"region\": {\n    \"coordinates\": [\n      [\n        [\n          5.846,\n          51.984\n        ],\n        [\n          5.849,\n          51.961\n        ],\n        [\n          5.91,\n          51.96\n        ],\n        [\n          5.916,\n          51.985\n        ],\n        [\n          5.877,\n          51.99\n        ],\n        [\n          5.846,\n          51.984\n        ]\n      ]\n    ],\n    \"geodesic\": true,\n    \"type\": \"Polygon\"\n  }\n}"
+					"raw": "{\n\"region\": {\n    \"coordinates\": [\n      [\n        [\n          5.846,\n          51.984\n        ],\n        [\n          5.849,\n          51.961\n        ],\n        [\n          5.91,\n          51.96\n        ],\n        [\n          5.916,\n          51.985\n        ],\n        [\n          5.877,\n          51.99\n        ],\n        [\n          5.846,\n          51.984\n        ]\n      ]\n    ],\n    \"geodesic\": true,\n    \"type\": \"Polygon\"\n  }\n}",
+					"options": {
+						"raw": {}
+					}
 				},
 				"url": {
 					"raw": "{{baseUrl}}/map/satellite/times/daily",
@@ -69,6 +103,20 @@
 		},
 		{
 			"name": "map/landuse/zonal-timeseries/",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c4864bc7-18f1-4556-83a0-953cf73859bd",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -81,7 +129,10 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n\t\"dateBegin\": \"2009-01-01\",\r\n\t\"dateEnd\": \"2012-01-01\",\r\n\t\"scale\": 30,\r\n\t\"region\": {\r\n\t\t\"type\": \"FeatureCollection\",\r\n\t\t\"features\": [{\r\n\t\t\t\"type\": \"Feature\",\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"type\": \"Polygon\",\r\n\t\t\t\t\"coordinates\": [\r\n\t\t\t\t\t[\r\n\t\t\t\t\t\t[5.846, 51.984],\r\n\t\t\t\t\t\t[5.849, 51.961],\r\n\t\t\t\t\t\t[5.910, 51.960],\r\n\t\t\t\t\t\t[5.916, 51.985],\r\n\t\t\t\t\t\t[5.877, 51.990],\r\n\t\t\t\t\t\t[5.846, 51.984]\r\n\t\t\t\t\t]\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"id\": 1\r\n\t\t\t}\r\n\t\t}]\r\n\t}\r\n}"
+					"raw": "{\r\n\t\"dateBegin\": \"2009-01-01\",\r\n\t\"dateEnd\": \"2012-01-01\",\r\n\t\"scale\": 30,\r\n\t\"region\": {\r\n\t\t\"type\": \"FeatureCollection\",\r\n\t\t\"features\": [{\r\n\t\t\t\"type\": \"Feature\",\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"type\": \"Polygon\",\r\n\t\t\t\t\"coordinates\": [\r\n\t\t\t\t\t[\r\n\t\t\t\t\t\t[5.846, 51.984],\r\n\t\t\t\t\t\t[5.849, 51.961],\r\n\t\t\t\t\t\t[5.910, 51.960],\r\n\t\t\t\t\t\t[5.916, 51.985],\r\n\t\t\t\t\t\t[5.877, 51.990],\r\n\t\t\t\t\t\t[5.846, 51.984]\r\n\t\t\t\t\t]\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"id\": 1\r\n\t\t\t}\r\n\t\t}]\r\n\t}\r\n}",
+					"options": {
+						"raw": {}
+					}
 				},
 				"url": {
 					"raw": "{{baseUrl}}/map/landuse/zonal-timeseries/",
@@ -100,6 +151,20 @@
 		},
 		{
 			"name": "map/landuse/zonal-info/ (year)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "427837fe-4db5-4c91-bd7b-c4bce22ff0a5",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -112,7 +177,10 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n\t\"region\": {\r\n\t\t\"type\": \"FeatureCollection\",\r\n\t\t\"features\": [{\r\n\t\t\t\"type\": \"Feature\",\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"type\": \"Polygon\",\r\n\t\t\t\t\"coordinates\": [\r\n\t\t\t\t\t[\r\n\t\t\t\t\t\t[5.846, 51.984],\r\n\t\t\t\t\t\t[5.849, 51.961],\r\n\t\t\t\t\t\t[5.910, 51.960],\r\n\t\t\t\t\t\t[5.916, 51.985],\r\n\t\t\t\t\t\t[5.877, 51.990],\r\n\t\t\t\t\t\t[5.846, 51.984]\r\n\t\t\t\t\t]\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"id\": 1\r\n\t\t\t}\r\n\t\t}]\r\n\t},\r\n\t\"dateBegin\": \"2017-01-01\",\r\n\t\"dateEnd\": \"2018-01-01\",\r\n\t\"assetType\": \"year\",\r\n\t\"scale\": 100\r\n}"
+					"raw": "{\r\n\t\"region\": {\r\n\t\t\"type\": \"FeatureCollection\",\r\n\t\t\"features\": [{\r\n\t\t\t\"type\": \"Feature\",\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"type\": \"Polygon\",\r\n\t\t\t\t\"coordinates\": [\r\n\t\t\t\t\t[\r\n\t\t\t\t\t\t[5.846, 51.984],\r\n\t\t\t\t\t\t[5.849, 51.961],\r\n\t\t\t\t\t\t[5.910, 51.960],\r\n\t\t\t\t\t\t[5.916, 51.985],\r\n\t\t\t\t\t\t[5.877, 51.990],\r\n\t\t\t\t\t\t[5.846, 51.984]\r\n\t\t\t\t\t]\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"id\": 1\r\n\t\t\t}\r\n\t\t}]\r\n\t},\r\n\t\"dateBegin\": \"2017-01-01\",\r\n\t\"dateEnd\": \"2018-01-01\",\r\n\t\"assetType\": \"year\",\r\n\t\"scale\": 100\r\n}",
+					"options": {
+						"raw": {}
+					}
 				},
 				"url": {
 					"raw": "{{baseUrl}}/map/landuse/zonal-info/",
@@ -131,6 +199,20 @@
 		},
 		{
 			"name": "map/landuse/zonal-info/ (day)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "84ebddc0-93b0-43a9-9872-1090e10cce35",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -143,7 +225,10 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n\t\"region\": {\r\n\t\t\"type\": \"FeatureCollection\",\r\n\t\t\"features\": [{\r\n\t\t\t\"type\": \"Feature\",\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"type\": \"Polygon\",\r\n\t\t\t\t\"coordinates\": [\r\n\t\t\t\t\t[\r\n\t\t\t\t\t\t[5.846, 51.984],\r\n\t\t\t\t\t\t[5.849, 51.961],\r\n\t\t\t\t\t\t[5.910, 51.960],\r\n\t\t\t\t\t\t[5.916, 51.985],\r\n\t\t\t\t\t\t[5.877, 51.990],\r\n\t\t\t\t\t\t[5.846, 51.984]\r\n\t\t\t\t\t]\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"id\": 1\r\n\t\t\t}\r\n\t\t}]\r\n\t},\r\n\t\"dateBegin\": \"2016-07-20\",\r\n\t\"dateEnd\": \"2016-07-21\",\r\n\t\"assetType\": \"day\",\r\n\t\"scale\": 100\r\n}"
+					"raw": "{\r\n\t\"region\": {\r\n\t\t\"type\": \"FeatureCollection\",\r\n\t\t\"features\": [{\r\n\t\t\t\"type\": \"Feature\",\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"type\": \"Polygon\",\r\n\t\t\t\t\"coordinates\": [\r\n\t\t\t\t\t[\r\n\t\t\t\t\t\t[5.846, 51.984],\r\n\t\t\t\t\t\t[5.849, 51.961],\r\n\t\t\t\t\t\t[5.910, 51.960],\r\n\t\t\t\t\t\t[5.916, 51.985],\r\n\t\t\t\t\t\t[5.877, 51.990],\r\n\t\t\t\t\t\t[5.846, 51.984]\r\n\t\t\t\t\t]\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"id\": 1\r\n\t\t\t}\r\n\t\t}]\r\n\t},\r\n\t\"dateBegin\": \"2016-07-20\",\r\n\t\"dateEnd\": \"2016-07-21\",\r\n\t\"assetType\": \"day\",\r\n\t\"scale\": 100\r\n}",
+					"options": {
+						"raw": {}
+					}
 				},
 				"url": {
 					"raw": "{{baseUrl}}/map/landuse/zonal-info/",
@@ -162,6 +247,20 @@
 		},
 		{
 			"name": "map/legger/zonal-info/",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "02d18d40-6ba8-4744-99e2-d09c25a1b9c4",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -174,7 +273,10 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n\t\"region\": {\r\n\t\t\"type\": \"FeatureCollection\",\r\n\t\t\"features\": [{\r\n\t\t\t\"type\": \"Feature\",\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"type\": \"Polygon\",\r\n\t\t\t\t\"coordinates\": [\r\n\t\t\t\t\t[\r\n\t\t\t\t\t\t[5.846, 51.984],\r\n\t\t\t\t\t\t[5.849, 51.961],\r\n\t\t\t\t\t\t[5.910, 51.960],\r\n\t\t\t\t\t\t[5.916, 51.985],\r\n\t\t\t\t\t\t[5.877, 51.990],\r\n\t\t\t\t\t\t[5.846, 51.984]\r\n\t\t\t\t\t]\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"id\": 1\r\n\t\t\t}\r\n\t\t}]\r\n\t},\r\n\t\"scale\": 100\r\n}"
+					"raw": "{\r\n\t\"region\": {\r\n\t\t\"type\": \"FeatureCollection\",\r\n\t\t\"features\": [{\r\n\t\t\t\"type\": \"Feature\",\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"type\": \"Polygon\",\r\n\t\t\t\t\"coordinates\": [\r\n\t\t\t\t\t[\r\n\t\t\t\t\t\t[5.846, 51.984],\r\n\t\t\t\t\t\t[5.849, 51.961],\r\n\t\t\t\t\t\t[5.910, 51.960],\r\n\t\t\t\t\t\t[5.916, 51.985],\r\n\t\t\t\t\t\t[5.877, 51.990],\r\n\t\t\t\t\t\t[5.846, 51.984]\r\n\t\t\t\t\t]\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"id\": 1\r\n\t\t\t}\r\n\t\t}]\r\n\t},\r\n\t\"scale\": 100,\r\n\t\"dateBegin\": \"2019-01-01\"\r\n}",
+					"options": {
+						"raw": {}
+					}
 				},
 				"url": {
 					"raw": "{{baseUrl}}/map/legger/zonal-info/",
@@ -193,6 +295,20 @@
 		},
 		{
 			"name": "map/satellite/export/ (year)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f7b1a5b8-e3fe-4bfe-853d-6352c6ba7023",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -207,9 +323,7 @@
 					"mode": "raw",
 					"raw": "{\r\n   \"dateBegin\": \"2016-01-01\",\r\n   \"dateEnd\": \"2017-01-01\",\r\n   \"assetType\": \"year\",\r\n   \"region\": {\r\n       \"coordinates\": [[\r\n           [5.846, 51.984],\r\n           [5.849, 51.961],\r\n           [5.91, 51.96],\r\n           [5.916, 51.985],\r\n           [5.877, 51.99],\r\n           [5.846, 51.984]]],\r\n       \"geodesic\": true,\r\n       \"type\": \"Polygon\"\r\n   },\r\n   \"vis\": {\r\n        \"bands\": [\"swir\", \"nir\", \"green\"],\r\n        \"min\": 0.03, \r\n        \"max\": 0.5\r\n   }\r\n}",
 					"options": {
-						"raw": {
-							"language": "json"
-						}
+						"raw": {}
 					}
 				},
 				"url": {
@@ -229,6 +343,20 @@
 		},
 		{
 			"name": "map/satellite/export/ (day)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "3944555a-c25d-4832-abf6-3ca80259c4a1",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -243,9 +371,7 @@
 					"mode": "raw",
 					"raw": "{\r\n   \"dateBegin\": \"2016-01-01\",\r\n   \"dateEnd\": \"2017-01-01\",\r\n   \"assetType\": \"year\",\r\n   \"region\": {\r\n       \"coordinates\": [[\r\n           [5.846, 51.984],\r\n           [5.849, 51.961],\r\n           [5.91, 51.96],\r\n           [5.916, 51.985],\r\n           [5.877, 51.99],\r\n           [5.846, 51.984]]],\r\n       \"geodesic\": true,\r\n       \"type\": \"Polygon\"\r\n   },\r\n   \"vis\": {\r\n        \"bands\": [\"swir\", \"nir\", \"green\"],\r\n        \"min\": 0.03, \r\n        \"max\": 0.5\r\n   }\r\n}",
 					"options": {
-						"raw": {
-							"language": "json"
-						}
+						"raw": {}
 					}
 				},
 				"url": {
@@ -265,6 +391,20 @@
 		},
 		{
 			"name": "get_times_by_tiles",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d9ee461c-1fec-40c8-964c-5eed6902de5a",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -277,11 +417,9 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"tiles\": [\r\n   { \"tx\": 1051, \"ty\": 676 },\r\n   { \"tx\": 1052, \"ty\": 676 },\r\n   { \"tx\": 1051, \"ty\": 677 },\r\n   { \"tx\": 1052, \"ty\": 677 },\r\n   { \"tx\": 1050, \"ty\": 677 }\r\n  ]\r\n}\r\n\r\n",
+					"raw": "{\n\t\"tilesMin\": { \"tx\": 529, \"ty\": 338 },\n\t\"tilesMax\": { \"tx\": 529, \"ty\": 339 }\n}",
 					"options": {
-						"raw": {
-							"language": "json"
-						}
+						"raw": {}
 					}
 				},
 				"url": {
@@ -298,12 +436,12 @@
 			"response": []
 		},
 		{
-			"name": "update cloud-free images",
+			"name": "cloud-free tile count",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "ddf8fc77-5c74-42ec-ac41-d4308d86860c",
+						"id": "5628c559-c440-4c27-82ed-d6061fbf7e20",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
@@ -317,24 +455,107 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/update_cloudfree_tile_images",
+					"raw": "{{baseUrl}}/get_cloudfree_tile_image_count",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
-						"update_cloudfree_tile_images"
+						"get_cloudfree_tile_image_count"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "cloud-free tile count",
+			"name": "voorspel/",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e921f836-b8a2-40e8-83e0-da1d62cdc101",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
-				"method": "GET",
-				"header": [],
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"region\": {\r\n        \"type\": \"FeatureCollection\",\r\n        \"features\": [\r\n            {\r\n              \"type\": \"Feature\",\r\n              \"geometry\": {\r\n                \"type\": \"Polygon\",\r\n                \"coordinates\": [\r\n                  [\r\n                    [\r\n                      5.869412857055636,\r\n                      51.97090473175753\r\n                    ],\r\n                    [\r\n                      5.888209777832003,\r\n                      51.96746759577021\r\n                    ],\r\n                    [\r\n                      5.895419555664034,\r\n                      51.978306898532956\r\n                    ],\r\n                    [\r\n                      5.884690719604464,\r\n                      51.98142601683456\r\n                    ],\r\n                    [\r\n                      5.869412857055636,\r\n                      51.97090473175753\r\n                    ]\r\n                  ]\r\n                ]\r\n              },\r\n              \"id\": \"0\",\r\n              \"properties\": {}\r\n            }\r\n        ]\r\n    }\r\n}",
+					"options": {
+						"raw": {}
+					}
+				},
 				"url": {
-					"raw": ""
+					"raw": "{{baseUrl}}/voorspel/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"voorspel",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "map/landuse/times/yearly OPTIONS",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "5b8726a1-3c7b-4b7f-8411-cbac8049b0d9",
+						"exec": [
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(500);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "OPTIONS",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"region\": {\n    \"coordinates\": [\n      [\n        [\n          5.846,\n          51.984\n        ],\n        [\n          5.849,\n          51.961\n        ],\n        [\n          5.91,\n          51.96\n        ],\n        [\n          5.916,\n          51.985\n        ],\n        [\n          5.877,\n          51.99\n        ],\n        [\n          5.846,\n          51.984\n        ]\n      ]\n    ],\n    \"geodesic\": true,\n    \"type\": \"Polygon\"\n  }\n}",
+					"options": {
+						"raw": {}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/map/landuse/times/yearly",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"map",
+						"landuse",
+						"times",
+						"yearly"
+					]
 				}
 			},
 			"response": []
