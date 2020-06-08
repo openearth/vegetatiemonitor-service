@@ -223,7 +223,7 @@ def get_ndvi(region, date_begin, date_end, vis):
 def _get_landuse(region, date_begin, date_end):
     """
     Computes landuse image using random forest algorithm given a (composite) image.
-    Uses RWS Legger classification as a ground-truth.
+    Uses RWS fotointerpretatie classes as a ground-truth.
     :param region:
     :param date_begin:
     :param date_end:
@@ -345,7 +345,7 @@ def get_landuse(region, date_begin, date_end, vis):
 
 
 def _get_landuse_vs_legger(region, date_begin, date_end):
-    legger = _get_legger_image()
+    legger = _get_legger_image(date_begin)
     # classification
     landuse = _get_landuse(region, date_begin, date_end)
     diff = landuse.subtract(legger).int32()
@@ -364,15 +364,19 @@ def get_landuse_vs_legger(region, date_begin, date_end, vis):
     return diff
 
 
-def _get_legger_image():
-    legger = ee.Image('projects/deltares-rws/vegetatiemonitor/legger-2012-6-class-10m')\
-        .rename('type')
+def _get_legger_image(date_begin):
+    if datetime.strptime(date_begin, '%Y-%m-%d') < datetime(2020, 5, 24):
+        legger = ee.Image('projects/deltares-rws/vegetatiemonitor/legger-2012-6-class-10m')\
+            .rename('type')
+    else:
+        legger = ee.Image('projects/deltares-rws/vegetatiemonitor/legger-2020-6-class-10m')\
+            .rename('type')
 
     return legger
 
 
 def get_legger(region, date_begin, date_end, vis):
-    legger = _get_legger_image()
+    legger = _get_legger_image(date_begin)
 
     return legger \
         .sldStyle(legger_style)
@@ -500,7 +504,7 @@ def get_zonal_info_ndvi(region, date_begin, date_end, scale, asset_type):
 def get_zonal_info_legger(region, date_begin, date_end, scale, asset_type):
     features = ee.FeatureCollection(region["features"])
 
-    image = _get_legger_image()
+    image = _get_legger_image(date_begin)
 
     info = _get_zonal_info(features, image, scale)
 
@@ -797,19 +801,21 @@ def get_map_zonal_info(id):
         asset_type = 'day'
 
     if asset_type not in asset_types:
-        return 'Error: assetType {0} is not supported, only day or year available' \
-            .format(asset_type)
+        raise ValueError('Error: assetType {0} is not supported, only day or year available'
+                         .format(asset_type))
 
     region = json['region']
 
-    date_begin = None
-    date_end = None
+    date_begin = json.get('dateBegin', None)
+    if asset_type == 'day' and not date_begin:
+        raise ValueError('Error: assetType {0} requires dateBegin to be defined.'
+                         .format(asset_type))
 
-    if 'dateBegin' in json:
-        date_begin = ee.Date(json['dateBegin'])
-
-    if 'dateEnd' in json:
-        date_end = ee.Date(json['dateEnd'])
+    date_end = json.get('dateEnd', None)
+    if not date_end:
+        date_end = ee.Date(date_begin).advance(1, 'day')
+    date_begin = date_begin or ee.Date(date_begin)
+    date_end = date_end or ee.Date(date_end)
 
     scale = json['scale']
 
