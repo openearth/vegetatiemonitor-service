@@ -4,6 +4,7 @@ import random
 import pytest
 
 from . import main
+from . import api
 
 
 @pytest.fixture()
@@ -51,7 +52,8 @@ def test_get_zonal_info_legger(client):
                 }
             ]
         },
-        "scale": 100
+        "scale": 100,
+        "dateBegin": "2020-01-02"
         }'''
 
     r = client.post('/map/legger/zonal-info/', data=input,
@@ -659,3 +661,15 @@ def test_voorspel(client):
     # output = sorted(json.loads(s))
     # print(output)
     # assert output[0]["series"][0]["data"][0] == 1.6977447813586202
+
+def test_get_2012_legger_image_by_date():
+    legger = api._get_legger_image('2019-01-01')
+    id = legger.get('system:id').getInfo()
+    # Legger ID returned prior to 2020-05-24 should be 2012 legger
+    assert id == 'projects/deltares-rws/vegetatiemonitor/legger-2012-6-class-10m'
+
+def test_get_2020_legger_image_by_date():
+    legger = api._get_legger_image('2020-05-25')
+    id = legger.get('system:id').getInfo()
+    # Legger ID returned after 2020-05-24 should be 2020 legger
+    assert id == 'projects/deltares-rws/vegetatiemonitor/legger-2020-6-class-10m'
