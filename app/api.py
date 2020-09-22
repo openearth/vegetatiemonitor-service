@@ -688,7 +688,6 @@ asset_types = ['day', 'year']
 
 def get_image_url(image):
     map_id = ee.Image(image).getMapId()
-    print(map_id)
     id = map_id['mapid']
 
     url = 'https://earthengine.googleapis.com/v1alpha/' \
