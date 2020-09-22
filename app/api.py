@@ -687,14 +687,13 @@ asset_types = ['day', 'year']
 
 
 def get_image_url(image):
-    map_id = image.getMapId()
-
+    map_id = ee.Image(image).getMapId()
+    print(map_id)
     id = map_id['mapid']
-    token = map_id['token']
 
-    url = 'https://earthengine.googleapis.com/map/' \
-          '{0}/{{z}}/{{x}}/{{y}}?token={1}' \
-        .format(id, token)
+    url = 'https://earthengine.googleapis.com/v1alpha/' \
+          '{0}/tiles/{{z}}/{{x}}/{{y}}' \
+        .format(id)
 
     return url
 
