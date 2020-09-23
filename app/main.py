@@ -1,5 +1,6 @@
 import sys, os
 import base64
+from google.oauth2 import service_account
 
 sys.path.append(os.getcwd())
 
@@ -7,7 +8,6 @@ import ee
 
 
 def initialize_google_earth_engine():
-    EE_ACCOUNT = 'vegetatie-monitor@appspot.gserviceaccount.com'
     EE_PRIVATE_KEY_FILE = 'privatekey.json'
 
     # if 'privatekey.json' is defined in environmental variable - write it to file
@@ -20,9 +20,12 @@ def initialize_google_earth_engine():
 
     # Initialize the EE API.
     # Use our App Engine service account's credentials.
-    EE_CREDENTIALS = ee.ServiceAccountCredentials(EE_ACCOUNT,
-                                                  EE_PRIVATE_KEY_FILE)
-    ee.Initialize(EE_CREDENTIALS)
+    EE_CREDENTIALS = service_account.Credentials.from_service_account_file(
+        EE_PRIVATE_KEY_FILE)
+
+    scoped_credentials = EE_CREDENTIALS.with_scopes(
+        ['https://www.googleapis.com/auth/cloud-platform'])
+    ee.Initialize(scoped_credentials)
 
     # delete temporary private key file
     if 'key' in os.environ:
