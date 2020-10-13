@@ -735,7 +735,7 @@ def export_map(id):
 
     image = exports[id](region, date_begin, date_end, vis, asset_type)
 
-    format = 'tif'
+    format = 'geotiff'
     if id == 'satellite':
         format = 'png'
 
