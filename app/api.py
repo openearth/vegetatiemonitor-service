@@ -261,7 +261,7 @@ def _get_landuse(region, date_begin, date_end):
     # train random forest classifier
     number_of_trees = 15
 
-    classifier = ee.Classifier.randomForest(number_of_trees) \
+    classifier = ee.Classifier.smileRandomForest(number_of_trees) \
         .train(samples, class_property, image.bandNames())
 
     # classify current image
@@ -305,7 +305,7 @@ def _get_landuse_old(region, date_begin, date_end):
         scale=10)
 
     # train random forest classifier
-    classifier = ee.Classifier.randomForest(10) \
+    classifier = ee.Classifier.smileRandomForest(10) \
         .train(training, 'GrndTruth')
 
     # classify image
