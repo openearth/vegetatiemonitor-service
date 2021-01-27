@@ -79,7 +79,7 @@ def get_satellite_images(region, date_begin, date_end, cloud_filtering):
         images = images.filterDate(date_begin, date_end)
 
     filter_options = {
-        'score_percentile': 95
+        'score_percentile': 75
     }
 
     if cloud_filtering:
@@ -171,9 +171,9 @@ def visualize_image(image, vis):
     if not vis:
         vis = {}
 
-    min = 0.05
-    max = [0.35, 0.35, 0.45]
-    gamma = 1.4
+    min = 0.065
+    max = [0.2, 0.2, 0.3]
+    gamma = 1.2
 
     vis = add_vis_parameter(vis, 'min', min)
     vis = add_vis_parameter(vis, 'max', max)
@@ -183,8 +183,11 @@ def visualize_image(image, vis):
 
 
 def get_satellite_image(region, date_begin, date_end, vis):
+    def resample_bicubic(i):
+        return i.resample('bicubic')
+
     images = get_satellite_images(region, date_begin, date_end, False)
-    image = ee.Image(images.mosaic()).divide(10000)
+    image = ee.Image(images.map(resample_bicubic).mosaic()).divide(10000)
     image = visualize_image(image, vis)
 
     return image
@@ -519,12 +522,11 @@ zonal_info = {
 }
 
 yearly_collections = {
-    'satellite': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
-    'ndvi': 'users/rogersckw9/vegetatiemonitor/satellite-yearly',
-    'landuse': 'users/rogersckw9/vegetatiemonitor/yearly-classified-images',
-    'landuse-vs-legger': 'users/rogersckw9/vegetatiemonitor/classificatie-vs-legger'
+    'satellite': 'projects/deltares-rws/vegetatiemonitor/satellite',
+    'ndvi': 'projects/deltares-rws/vegetatiemonitor/satellite',
+    'landuse': 'projects/deltares-rws/vegetatiemonitor/classificatie',
+    'landuse-vs-legger': 'projects/deltares-rws/vegetatiemonitor/classificatie-vs-legger'
 }
-
 
 def _get_zonal_timeseries(features, images, scale):
     images = ee.ImageCollection(images)
