@@ -897,6 +897,10 @@ def _get_map_times_yearly(id, region):
     date_begin = datetime(2000, 1, 1, 0, 0, 0)
     date_end = datetime.now()
 
+    # HACK: switch to landuse maps if we query times for satellite (not exported anymore)
+    if id == 'satellite':
+        id = 'landuse'
+
     images = get_image_collection(yearly_collections[id], region, date_begin, date_end)
 
     image_times = ee.List(images.aggregate_array('system:time_start')) \
